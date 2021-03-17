@@ -29,6 +29,6 @@ $pip install cv-py -i https://pypi.tuna.tsinghua.edu.cn/simple
 $git clone https://github.com/XiangLiHealthy/spider.git
 
 #运行测试
-$cd action_recongnition/ && python3 main.py
+$cd action_recongnition/ && python3 test.py
 ```
 

@@ -1,0 +1,32 @@
+[
+  {
+    "name" : "双手侧平举",
+    "mode" : "upper/full_body",
+    "action_time" : 7,
+    "pose" : [
+      {
+        "keep_time" : 0,
+        "angle" : [180, 180, 0, 180, 180, 180,0, 180]
+      },
+      {
+        "keep_time" : 0,
+        "angle" : [180, 180, 90, 180, 180, 180,90, 180]
+      }
+    ]
+  },
+  {
+    "name" : "单手侧平举",
+    "mode" : "upper/full_body",
+    "action_time" : 7,
+    "pose" : [
+      {
+        "keep_time" : 0,
+        "angle" : [180, 180, 0, 180, 180, 180,0, 180]
+      },
+      {
+        "keep_time" : 0,
+        "angle" : [180, 180, 90, 180, 180, 180,0, 180]
+      }
+    ]
+  }
+]

@@ -110,7 +110,7 @@ class ActionRecongnition:
 
 
         landmarks = MessageToDict(protobuf_landmarks)
-        pose_angle = Util.translateLandmarks(landmarks['landmark'])
+        pose_angle = Util.translateLandmarks(landmarks['landmark'], image)
 
         self.recong_aciton(pose_angle)
 

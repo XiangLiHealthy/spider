@@ -2,6 +2,7 @@ from action import Action
 import json
 import math
 import numpy as np
+import cv2
 
 angle_points_config = [
     [28, 26, 24],#right knee
@@ -73,7 +74,8 @@ class Util:
             v1 = [start['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
             v2 = [end['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
             angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-            angle_d = 2 * np.pi - angle
+            #angle_d = 2 * np.pi - angle
+            angle_d = angle
 
         except Exception as e :
             print ('cal_ang:{}'.format(e))
@@ -91,11 +93,49 @@ class Util:
 
         return angles
 
-    def translateLandmarks(self, pose_landmarks):
+    def translateLandmarks(self, pose_landmarks, image):
         angle_points = self.getAllAnglePoints(pose_landmarks)
 
         angles = self.caculateAngles(angle_points)
 
+        # debug points
+        point_color = (0, 255, 0)  # BGR
+       # img = image #np.zeros((image.width, 320, 3), np.uint8)  # 生成一个空灰度图像
+        height, width, _ = image.shape
+        img = np.zeros((width, height, 3), np.uint8)  # 生成一个空灰度图像
+        for dot in pose_landmarks:
+            #x, y = dot['x']
+            w = int(dot['x'] * width)
+            h = int (dot['y'] * height)
+            #cv2.circle(img, (w , h), 10, point_color)
+
+        #cv2.imshow('landmarks dot', img)
+
+        img2 = np.zeros((width, height, 3), np.uint8)  # 生成一个空灰度图像
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        idx = 0
+
+        for angle_dots in angle_points :
+
+            dot = angle_dots['start']
+            w = int(dot['x'] * width)
+            h = int(dot['y'] * height)
+            cv2.circle(img2, (w, h), 4, colors[idx % 3])
+
+            dot = angle_dots['mid']
+            w = int(dot['x'] * width)
+            h = int(dot['y'] * height)
+            cv2.circle(img2, (w, h), 4, colors[idx % 3])
+
+            dot = angle_dots['end']
+            w = int(dot['x'] * width)
+            h = int(dot['y'] * height)
+            cv2.circle(img2, (w, h), 4, colors[idx % 3])
+
+            idx += 1
+        cv2.imshow('angele landmarks', img2)
+
+        #cv2.destroyAllWindows()
         return angles
 
     def loadAcitonDB(self):

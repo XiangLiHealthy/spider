@@ -8,7 +8,3 @@ class PossibleAction:
         self.m_finished_matched_time = 0.0
 
         return
-
-    def addAngle(self, angles):
-
-        return

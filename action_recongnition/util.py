@@ -22,6 +22,18 @@ class Util:
         self.m_model_path = 'action_model.json'
 
         return
+    def caculatePoseDifference(self, current, standard):
+        sum_diff = 0.0
+
+        try:
+            for cur, std in current, standard:
+                sum_diff += (cur - std) * (cur - std)
+
+            aver_diff = sum_diff / len(current)
+        except Exception as e:
+            print ('caculatePoseDifference except:{}'.format(e))
+
+        return aver_diff
 
     def getAllAnglePoints(self, pose_landmarks):
         angle_points = []
@@ -50,15 +62,18 @@ class Util:
         :param point_3: 点3坐标
         :return: 返回任意角的夹角值，这里只是返回点2的夹角
         """
-        a = math.sqrt((point_2[0] - point_3[0]) * (point_2[0] - point_3[0]) + (point_2[1] - point_3[1]) * (
-                    point_2[1] - point_3[1]))
-        b = math.sqrt((point_1[0] - point_3[0]) * (point_1[0] - point_3[0]) + (point_1[1] - point_3[1]) * (
-                    point_1[1] - point_3[1]))
-        c = math.sqrt((point_1[0] - point_2[0]) * (point_1[0] - point_2[0]) + (point_1[1] - point_2[1]) * (
-                    point_1[1] - point_2[1]))
-        A = math.degrees(math.acos((a * a - b * b - c * c) / (-2 * b * c)))
-        B = math.degrees(math.acos((b * b - a * a - c * c) / (-2 * a * c)))
-        C = math.degrees(math.acos((c * c - a * a - b * b) / (-2 * a * b)))
+        try:
+            a = math.sqrt((point_2[0] - point_3[0]) * (point_2[0] - point_3[0]) + (point_2[1] - point_3[1]) * (
+                        point_2[1] - point_3[1]))
+            b = math.sqrt((point_1[0] - point_3[0]) * (point_1[0] - point_3[0]) + (point_1[1] - point_3[1]) * (
+                        point_1[1] - point_3[1]))
+            c = math.sqrt((point_1[0] - point_2[0]) * (point_1[0] - point_2[0]) + (point_1[1] - point_2[1]) * (
+                        point_1[1] - point_2[1]))
+            A = math.degrees(math.acos((a * a - b * b - c * c) / (-2 * b * c)))
+            B = math.degrees(math.acos((b * b - a * a - c * c) / (-2 * a * c)))
+            C = math.degrees(math.acos((c * c - a * a - b * b) / (-2 * a * b)))
+        except Exception as e :
+            print ('cal_ang:{}'.format(e))
 
         return B
 
@@ -68,7 +83,7 @@ class Util:
             try:
                 angle = self.cal_ang(points[K_START], points[K_MID], points[K_END])
             except Exception as e:
-                print (e)
+                print ('caculateAngles:{}'.format(e) )
 
         return angles
 
@@ -87,7 +102,7 @@ class Util:
 
             return j_actions
         except Exception as e:
-            print (e)
+            print ("loadAcitonDB:{}".format(e) )
 
         return None
 

@@ -1,18 +1,20 @@
 from action import Action
 from possible_action import PossibleAction
+from util import Util
+
 ANGLE_THRESHOLD = 5
 RATE_THRESHOLD = 0.9
 
 class ActionClassification:
     def __init__(self):
-        self.m_actions = []
-        self.m_possible_actions = []
+        self.m_action_config = []
+        self.m_action_queue = []
         self.m_pose_angles = []
 
         return
     def setActionSet(self, actions):
-        self.m_actions = actions
-        self.m_possible_actions.clear()
+        self.m_action_config = actions
+        self.m_action_queue.clear()
 
         try:
             for j_action in actions:
@@ -24,32 +26,21 @@ class ActionClassification:
                 for angle in frame_angles:
                     joint_angle = {}
                     joint_angle['keep_time'] = angle['keep_time']
-                    joint_angle['angles'] = angle['angles']
+                    joint_angle['angles'] = Util.translateLandmarks( angle['landmarks'])
                     joint_angle['possible'] = -1
                     action.m_pose_angles.append(joint_angle)
-                self.m_possible_actions.append(action)
+                self.m_action_queue.append(action)
 
                 action.m_match_times = 0
                 action.m_need_times = len(frame_angles)
 
-                self.m_possible_actions.append(action)
+                self.m_action_queue.append(action)
         except Exception as e:
             print ('setActionSet'.format(e))
 
         return
 
-    def caculatePoseDifference(self, current, standard):
-        sum_diff = 0.0
 
-        try:
-            for cur, std in current, standard:
-                sum_diff += (cur - std) * (cur - std)
-
-            aver_diff = sum_diff / len(current)
-        except Exception as e:
-            print ('caculatePoseDifference except:{}'.format(e))
-
-        return aver_diff
 
     def matchOnePose(self, action, current_pose):
         #看当前姿态是否已经匹配过，已经匹配过说明是动作返回
@@ -71,19 +62,28 @@ class ActionClassification:
         is_back = False
 
         # match all action by every pose angle
-        action = Action()
-
         try:
             self.m_pose_angles.append(pose_angle)
 
-            for action in self.m_possible_actions:
+            for action in self.m_action_queue:
+
+                # find min angle difference
+                idx = 0
+                min_diff = 0xffffff
+                min_idx = -1
                 for joint in action.m_pose_angles:
                     angles = joint['angles']
-                    aver_diff = self.caculatePoseDifference(pose_angle, angles)
-                    if aver_diff < ANGLE_THRESHOLD:
-                        if (self.matchOnePose(action, joint) is True and is_back is False):
-                            is_bakc = True
-                        continue
+                    aver_diff = Util.caculatePoseDifference(pose_angle, angles)
+                    if aver_diff < min_diff:
+                        min_diff = aver_diff
+                        min_idx = idx
+                    idx += 1
+
+                # it is time finish a ction when return the first pose angle
+                if aver_diff < ANGLE_THRESHOLD:
+                    if (self.matchOnePose(action, joint) is True and is_back is False and 0 == idx):
+                        is_bakc = True
+
         except Exception as e:
             print ('markMatchState'.format(e))
 

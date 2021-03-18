@@ -1,6 +1,8 @@
 from action import Action
 import json
 import math
+import numpy as np
+import cv2
 
 angle_points_config = [
     [28, 26, 24],#right knee
@@ -22,6 +24,21 @@ class Util:
         self.m_model_path = 'action_model.json'
 
         return
+    def caculatePoseDifference(self, current, standard):
+        sum_diff = 0.0
+
+        try:
+            count = len(current)
+            for idx in range(count):
+                cur = current[idx]
+                std = standard[idx]
+                sum_diff += (cur - std) * (cur - std)
+
+            aver_diff = sum_diff / len(current)
+        except Exception as e:
+            print ('caculatePoseDifference except:{}'.format(e))
+
+        return aver_diff
 
     def getAllAnglePoints(self, pose_landmarks):
         angle_points = []
@@ -42,7 +59,7 @@ class Util:
 
         return angle_points
 
-    def cal_ang(self, point_1, point_2, point_3):
+    def cal_ang(self, start, mid, end):
         """
         根据三点坐标计算夹角
         :param point_1: 点1坐标
@@ -50,33 +67,75 @@ class Util:
         :param point_3: 点3坐标
         :return: 返回任意角的夹角值，这里只是返回点2的夹角
         """
-        a = math.sqrt((point_2[0] - point_3[0]) * (point_2[0] - point_3[0]) + (point_2[1] - point_3[1]) * (
-                    point_2[1] - point_3[1]))
-        b = math.sqrt((point_1[0] - point_3[0]) * (point_1[0] - point_3[0]) + (point_1[1] - point_3[1]) * (
-                    point_1[1] - point_3[1]))
-        c = math.sqrt((point_1[0] - point_2[0]) * (point_1[0] - point_2[0]) + (point_1[1] - point_2[1]) * (
-                    point_1[1] - point_2[1]))
-        A = math.degrees(math.acos((a * a - b * b - c * c) / (-2 * b * c)))
-        B = math.degrees(math.acos((b * b - a * a - c * c) / (-2 * a * c)))
-        C = math.degrees(math.acos((c * c - a * a - b * b) / (-2 * a * b)))
+        angle_d = 0.0
+        try:
+            # v1 is your firsr vector
+            # v2 is your second vector
+            v1 = [start['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
+            v2 = [end['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
+            angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+            #angle_d = 2 * np.pi - angle
+            angle_d = angle
 
-        return B
+        except Exception as e :
+            print ('cal_ang:{}'.format(e))
+
+        return angle_d
 
     def caculateAngles(self, angle_points):
         angles = []
         for points in angle_points:
             try:
                 angle = self.cal_ang(points[K_START], points[K_MID], points[K_END])
+                angles.append(angle)
             except Exception as e:
-                print (e)
+                print ('caculateAngles:{}'.format(e) )
 
         return angles
 
-    def translateLandmarks(self, pose_landmarks):
+    def translateLandmarks(self, pose_landmarks, image):
         angle_points = self.getAllAnglePoints(pose_landmarks)
 
         angles = self.caculateAngles(angle_points)
 
+        # debug points
+        point_color = (0, 255, 0)  # BGR
+       # img = image #np.zeros((image.width, 320, 3), np.uint8)  # 生成一个空灰度图像
+        height, width, _ = image.shape
+        img = np.zeros((width, height, 3), np.uint8)  # 生成一个空灰度图像
+        for dot in pose_landmarks:
+            #x, y = dot['x']
+            w = int(dot['x'] * width)
+            h = int (dot['y'] * height)
+            #cv2.circle(img, (w , h), 10, point_color)
+
+        #cv2.imshow('landmarks dot', img)
+
+        img2 = np.zeros((width, height, 3), np.uint8)  # 生成一个空灰度图像
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        idx = 0
+
+        for angle_dots in angle_points :
+
+            dot = angle_dots['start']
+            w = int(dot['x'] * width)
+            h = int(dot['y'] * height)
+            cv2.circle(img2, (w, h), 4, colors[idx % 3])
+
+            dot = angle_dots['mid']
+            w = int(dot['x'] * width)
+            h = int(dot['y'] * height)
+            cv2.circle(img2, (w, h), 4, colors[idx % 3])
+
+            dot = angle_dots['end']
+            w = int(dot['x'] * width)
+            h = int(dot['y'] * height)
+            cv2.circle(img2, (w, h), 4, colors[idx % 3])
+
+            idx += 1
+        cv2.imshow('angele landmarks', img2)
+
+        #cv2.destroyAllWindows()
         return angles
 
     def loadAcitonDB(self):
@@ -87,8 +146,9 @@ class Util:
 
             return j_actions
         except Exception as e:
-            print (e)
+            print ("loadAcitonDB:{}".format(e) )
 
         return None
 
     #def getAction(self, actions, name):
+Util = Util()

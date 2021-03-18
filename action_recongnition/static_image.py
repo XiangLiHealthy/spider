@@ -1,11 +1,21 @@
 import cv2
 import mediapipe as mp
+from google.protobuf.json_format import MessageToDict
+import json
+
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
+
+import os
+import glob
+
+path = './sample'
+file_list = glob.glob("./sample/*.png")
 
 # For static images:
 with mp_pose.Pose(
     static_image_mode=True, min_detection_confidence=0.5) as pose:
+
   for idx, file in enumerate(file_list):
     image = cv2.imread(file)
     image_height, image_width, _ = image.shape
@@ -14,11 +24,14 @@ with mp_pose.Pose(
 
     if not results.pose_landmarks:
       continue
-    print(
-        f'Nose coordinates: ('
-        f'{results.pose_landmarks.landmark[mp_holistic.PoseLandmark.NOSE].x * image_width}, '
-        f'{results.pose_landmarks.landmark[mp_holistic.PoseLandmark.NOSE].y * image_height})'
-    )
+
+    landmarks = MessageToDict(results.pose_landmarks)
+
+    (path, filename) = os.path.split(file)
+    file_name = '{}/{}.json'.format(path, filename)
+    with open(file_name, "w") as outfile:
+        json.dump(landmarks['landmark'], outfile)
+
     # Draw pose landmarks on the image.
     annotated_image = image.copy()
     # Use mp_pose.UPPER_BODY_POSE_CONNECTIONS for drawing below when

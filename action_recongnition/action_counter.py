@@ -1,10 +1,16 @@
 
 class ActionCounter:
     def __init__(self):
-        self.m_counter = {}
+        self.m_name = ''
+        self.m_counter = 0
 
         return
 
     def addAction(self, name):
+        if self.m_name != name:
+            self.m_counter = 1
+            self.m_name = name
+        else:
+            self.m_counter += 1
 
-        return
+        return self.m_counter

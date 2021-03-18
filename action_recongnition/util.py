@@ -1,6 +1,7 @@
 from action import Action
 import json
 import math
+import numpy as np
 
 angle_points_config = [
     [28, 26, 24],#right knee
@@ -26,7 +27,10 @@ class Util:
         sum_diff = 0.0
 
         try:
-            for cur, std in current, standard:
+            count = len(current)
+            for idx in range(count):
+                cur = current[idx]
+                std = standard[idx]
                 sum_diff += (cur - std) * (cur - std)
 
             aver_diff = sum_diff / len(current)
@@ -54,7 +58,7 @@ class Util:
 
         return angle_points
 
-    def cal_ang(self, point_1, point_2, point_3):
+    def cal_ang(self, start, mid, end):
         """
         根据三点坐标计算夹角
         :param point_1: 点1坐标
@@ -62,26 +66,26 @@ class Util:
         :param point_3: 点3坐标
         :return: 返回任意角的夹角值，这里只是返回点2的夹角
         """
+        angle_d = 0.0
         try:
-            a = math.sqrt((point_2[0] - point_3[0]) * (point_2[0] - point_3[0]) + (point_2[1] - point_3[1]) * (
-                        point_2[1] - point_3[1]))
-            b = math.sqrt((point_1[0] - point_3[0]) * (point_1[0] - point_3[0]) + (point_1[1] - point_3[1]) * (
-                        point_1[1] - point_3[1]))
-            c = math.sqrt((point_1[0] - point_2[0]) * (point_1[0] - point_2[0]) + (point_1[1] - point_2[1]) * (
-                        point_1[1] - point_2[1]))
-            A = math.degrees(math.acos((a * a - b * b - c * c) / (-2 * b * c)))
-            B = math.degrees(math.acos((b * b - a * a - c * c) / (-2 * a * c)))
-            C = math.degrees(math.acos((c * c - a * a - b * b) / (-2 * a * b)))
+            # v1 is your firsr vector
+            # v2 is your second vector
+            v1 = [start['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
+            v2 = [end['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
+            angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+            angle_d = 2 * np.pi - angle
+
         except Exception as e :
             print ('cal_ang:{}'.format(e))
 
-        return B
+        return angle_d
 
     def caculateAngles(self, angle_points):
         angles = []
         for points in angle_points:
             try:
                 angle = self.cal_ang(points[K_START], points[K_MID], points[K_END])
+                angles.append(angle)
             except Exception as e:
                 print ('caculateAngles:{}'.format(e) )
 
@@ -107,3 +111,4 @@ class Util:
         return None
 
     #def getAction(self, actions, name):
+Util = Util()

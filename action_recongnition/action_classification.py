@@ -22,17 +22,17 @@ class ActionClassification:
                 action.m_name = j_action['name']
                 action.m_action_time = j_action['action_time']
 
-                frame_angles = j_action['angles']
-                for angle in frame_angles:
+                pose_angles = j_action['pose']
+                for angle in pose_angles:
                     joint_angle = {}
                     joint_angle['keep_time'] = angle['keep_time']
                     joint_angle['angles'] = Util.translateLandmarks( angle['landmarks'])
-                    joint_angle['possible'] = -1
+                    joint_angle['possible'] = 0
                     action.m_pose_angles.append(joint_angle)
-                self.m_action_queue.append(action)
+                    action.m_pose_landmark.append(angle['landmarks'])
 
                 action.m_match_times = 0
-                action.m_need_times = len(frame_angles)
+                action.m_need_times = len(pose_angles)
 
                 self.m_action_queue.append(action)
         except Exception as e:
@@ -47,7 +47,7 @@ class ActionClassification:
         is_back = False
 
         try:
-            flag = current_pose['possile']
+            flag = current_pose['possible']
             if 1 == flag:
                 is_back = True
             else:
@@ -81,8 +81,8 @@ class ActionClassification:
 
                 # it is time finish a ction when return the first pose angle
                 if aver_diff < ANGLE_THRESHOLD:
-                    if (self.matchOnePose(action, joint) is True and is_back is False and 0 == idx):
-                        is_bakc = True
+                    if (self.matchOnePose(action, joint) is True and is_back is False and 0 == min_idx):
+                        is_back = True
 
         except Exception as e:
             print ('markMatchState'.format(e))
@@ -94,7 +94,7 @@ class ActionClassification:
         actions = []
 
         try:
-            for action in self.m_actions:
+            for action in self.m_action_queue:
                 rate = action.m_match_times / action.m_need_times
                 if rate >= RATE_THRESHOLD:
                     actions.append(action)
@@ -105,7 +105,7 @@ class ActionClassification:
 
     def selectBestOne(self, actions):
         #选择所有动作中角度变化最大的一个
-        max_diff = 0.0
+        max_diff = -1000000
         action = Action()
 
         try:
@@ -115,7 +115,7 @@ class ActionClassification:
                 end_pos = len(one.m_pose_angles) - 1
                 end = one.m_pose_angles[end_pos]
 
-                diff = self.caculatePoseDifference(start, end)
+                diff = Util.caculatePoseDifference(start['angles'], end['angles'])
                 if diff > max_diff:
                     action = one
                     max_diff = diff
@@ -130,7 +130,7 @@ class ActionClassification:
             #动作平分完成后才能清楚这个缓存
             #self.m_pose_angles.clear()
 
-            for action in self.m_actions:
+            for action in self.m_action_queue:
                 action.m_match_times = 0
                 for angle in action.m_pose_angles:
                     angle['possible'] = 0

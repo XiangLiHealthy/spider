@@ -7,10 +7,10 @@ class ActionCounter:
         return
 
     def addAction(self, name):
-        if self.name != name:
+        if self.m_name != name:
             self.m_counter = 1
             self.m_name = name
         else:
             self.m_counter += 1
 
-        return self
+        return self.m_counter

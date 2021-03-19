@@ -130,7 +130,7 @@ class ActionRecongnition:
     def startup(self):
         url = "rtsp://admin:admin@192.168.17.62:8554/live"
         #url = "rtsp://admin:admin@192.168.18.143:8554/live"
-        #url = "./sample/action.mp4"
+        url = "./sample/action.mp4"
 
         # For webcam input:
         cap = cv2.VideoCapture(url)

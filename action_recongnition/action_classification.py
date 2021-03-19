@@ -1,8 +1,9 @@
 from action import Action
 from possible_action import PossibleAction
 from util import Util
+import cv2
 
-ANGLE_THRESHOLD = 5
+ANGLE_THRESHOLD = 300
 RATE_THRESHOLD = 0.9
 
 class ActionClassification:
@@ -10,6 +11,7 @@ class ActionClassification:
         self.m_action_config = []
         self.m_action_queue = []
         self.m_pose_angles = []
+        self.m_image = None
 
         return
     def setActionSet(self, actions):
@@ -26,11 +28,12 @@ class ActionClassification:
                 for angle in pose_angles:
                     joint_angle = {}
                     joint_angle['keep_time'] = angle['keep_time']
-                    joint_angle['angles'] = Util.translateLandmarks( angle['landmarks'])
+                    shape = [angle['shape']['height'], angle['shape']['width'], angle['shape']['depth']]
+                    joint_angle['angles'] = Util.translateLandmarks( angle['landmarks'], shape, None)
                     joint_angle['possible'] = 0
                     action.m_pose_angles.append(joint_angle)
-                    action.m_pose_landmark.append(angle['landmarks'])
 
+                action.m_teacher_pose = j_action
                 action.m_match_times = 0
                 action.m_need_times = len(pose_angles)
 
@@ -41,6 +44,13 @@ class ActionClassification:
         return
 
 
+    def getActionByName(self, name):
+        for action in self.m_action_queue :
+            if name == action.m_name :
+                return action
+
+        print ('there is not action name :{}'.format(name))
+        return None
 
     def matchOnePose(self, action, current_pose):
         #看当前姿态是否已经匹配过，已经匹配过说明是动作返回
@@ -58,6 +68,14 @@ class ActionClassification:
 
         return is_back
 
+    def debugAngles(self, texts):
+        height = 100
+        for text in texts:
+            cv2.putText(self.m_image, text, (50, height), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
+            height += 50
+
+        return
+
     def markMatchState(self, pose_angle):
         is_back = False
 
@@ -65,24 +83,37 @@ class ActionClassification:
         try:
             self.m_pose_angles.append(pose_angle)
 
+            debug_acitions_angle = []
+            debug_acitions_angle.append(str(pose_angle))
+
             for action in self.m_action_queue:
 
                 # find min angle difference
                 idx = 0
-                min_diff = 0xffffff
+                min_diff = 1000000
                 min_idx = -1
-                for joint in action.m_pose_angles:
-                    angles = joint['angles']
-                    aver_diff = Util.caculatePoseDifference(pose_angle, angles)
+                min_pose = None
+                for one_pose in action.m_pose_angles:
+                    standard = one_pose['angles']
+                    aver_diff = Util.caculatePoseDifference(pose_angle, standard)
                     if aver_diff < min_diff:
                         min_diff = aver_diff
                         min_idx = idx
+                        min_pose = one_pose
+                        #print ('min_diff:{}, min_idx:{}'.format(min_diff, min_idx))
                     idx += 1
 
                 # it is time finish a ction when return the first pose angle
-                if aver_diff < ANGLE_THRESHOLD:
-                    if (self.matchOnePose(action, joint) is True and is_back is False and 0 == min_idx):
+                if min_diff < ANGLE_THRESHOLD:
+                    print ('name:{}, diff:{}, threshold:{}'.format(action.m_name, aver_diff, ANGLE_THRESHOLD))
+                    tmp = self.matchOnePose(action, min_pose)
+                    if (tmp is True and is_back is False and 0 == min_idx):
                         is_back = True
+                        print ('is_back:True')
+
+                debug_acitions_angle.append( '{},diff:{}'.format(action.m_name, min_diff))
+
+            self.debugAngles(debug_acitions_angle)
 
         except Exception as e:
             print ('markMatchState'.format(e))
@@ -96,6 +127,7 @@ class ActionClassification:
         try:
             for action in self.m_action_queue:
                 rate = action.m_match_times / action.m_need_times
+                print ('name:{}, rate:{}, standard:{}'.format(action.m_name, rate, RATE_THRESHOLD))
                 if rate >= RATE_THRESHOLD:
                     actions.append(action)
         except Exception as e:
@@ -119,12 +151,16 @@ class ActionClassification:
                 if diff > max_diff:
                     action = one
                     max_diff = diff
+
+                print("select name:{}, diff:{}".format(one.m_name, diff))
         except Exception as e:
             print ('selectBestOne except:{}'.format(e))
 
+        print ('best name:{}'.format(action.m_name))
         return action
 
     def resetAllMatchState(self):
+        #print ('resetAllMatchState')
         #将match_times和possible设置为出事状态，避免干扰下一次识别
         try:
             #动作平分完成后才能清楚这个缓存

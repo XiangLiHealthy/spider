@@ -6,7 +6,7 @@ class Action:
         self.m_start_time = 0.0
         self.m_end_time = 0.0
         self.m_pose_angles = []
-        self.m_pose_landmark = []
+        self.m_teacher_pose = None
         self.m_match_times = 0
         self.m_need_times = 0xfffffffff
 

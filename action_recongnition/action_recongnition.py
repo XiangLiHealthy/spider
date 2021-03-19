@@ -16,29 +16,34 @@ import numpy as np
 
 class ActionRecongnition:
     def __init__(self):
-        self.m_guide_name = ''
-        self.m_guide_flag = False
+        try:
+            self.m_guide_name = 'ce_ping_ju'
+            self.m_guide_flag = False
 
-        self.m_classifier = ActionClassification()
-        self.m_counter = ActionCounter()
-        self.m_score = ActionScore()
-        self.m_guider = ActionGuide(self)
+            self.m_classifier = ActionClassification()
+            self.m_counter = ActionCounter()
+            self.m_score = ActionScore()
+            self.m_guider = ActionGuide(self)
 
-        actions = Util.loadAcitonDB()
-        self.m_classifier.setActionSet(actions)
+            actions = Util.loadAcitonDB()
+            self.m_classifier.setActionSet(actions)
 
-        self.m_possible_action = PossibleAction()
-        self.m_current_count = 0
-        self.m_current_score = 0
+            self.m_possible_action = PossibleAction()
+            self.m_current_count = 0
+            self.m_current_score = 0
 
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_pose = mp.solutions.pose
+            self.mp_drawing = mp.solutions.drawing_utils
+            self.mp_pose = mp.solutions.pose
+            self.m_image = None
 
+        except Exception as e :
+            print ('ActionRecongnition init :{}'.format(e))
         return
 
     def recong_aciton(self, pose):
         try:
             # recong action
+            self.m_classifier.m_image = self.m_image
             self.m_possible_action = self.m_classifier.classify(pose)
             if None == self.m_possible_action:
                 return
@@ -73,6 +78,7 @@ class ActionRecongnition:
     def draw_result(self, image):
         try:
             #draw action name ,count, score
+
             if None == self.m_possible_action:
                 return image
 
@@ -82,8 +88,8 @@ class ActionRecongnition:
 
             text = '{} : {}, score: {}'.format(name, count, score)
 
-            #cv2.putText(image, text, (40, 50), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
-            image = self.paint_chinese_opencv(image, text, (40, 50), (0, 0, 255))
+            cv2.putText(image, text, (40, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
+            #image = self.paint_chinese_opencv(image, text, (40, 10), (0, 0, 255))
         except Exception as e :
             print ("draw_result:{}".format(e))
 
@@ -92,12 +98,13 @@ class ActionRecongnition:
     def guide_action(self, pose, protobuf_landmarks, image):
         # guide action if set aciton name
         if '' != self.m_guide_name:
-            action = self.m_classifier.getActionByName(self.m_guide_name)
-            self.m_guider.setCurrentAction(action)
-        elif None == self.m_possible_action:
-            return
-        else:
+            self.m_possible_action = self.m_classifier.getActionByName(self.m_guide_name)
             self.m_guider.setCurrentAction(self.m_possible_action)
+
+        if None == self.m_possible_action:
+            return
+
+        self.m_guider.setCurrentAction(self.m_possible_action)
 
         #find action that need guide
         image = self.m_guider.guideAction(pose, protobuf_landmarks, image)
@@ -108,9 +115,9 @@ class ActionRecongnition:
         if protobuf_landmarks == None:
             return image
 
-
+        self.m_image = image
         landmarks = MessageToDict(protobuf_landmarks)
-        pose_angle = Util.translateLandmarks(landmarks['landmark'], image)
+        pose_angle = Util.translateLandmarks(landmarks['landmark'], image.shape, image)
 
         self.recong_aciton(pose_angle)
 
@@ -121,9 +128,9 @@ class ActionRecongnition:
         return image
 
     def startup(self):
-        # url = "rtsp://admin:admin@192.168.17.62:8554/live"
-        url = "rtsp://admin:admin@192.168.18.143:8554/live"
-        url = "./sample/action.mp4"
+        url = "rtsp://admin:admin@192.168.17.62:8554/live"
+        #url = "rtsp://admin:admin@192.168.18.143:8554/live"
+        #url = "./sample/action.mp4"
 
         # For webcam input:
         cap = cv2.VideoCapture(url)
@@ -153,6 +160,8 @@ class ActionRecongnition:
                 self.mp_drawing.draw_landmarks(
                     image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS,
                     mp.solutions.drawing_utils.DrawingSpec(color=(255, 0, 0)))
+
+                image = cv2.resize(image, (1440, 1080))
                 cv2.imshow('MediaPipe Pose', image)
                 if cv2.waitKey(5) & 0xFF == 27:
                     break

@@ -10,7 +10,7 @@ import os
 import glob
 
 path = './sample'
-file_list = glob.glob("./sample/*.png")
+file_list = glob.glob("./sample/*.jpg")
 
 # For static images:
 with mp_pose.Pose(
@@ -18,19 +18,41 @@ with mp_pose.Pose(
 
   for idx, file in enumerate(file_list):
     image = cv2.imread(file)
-    image_height, image_width, _ = image.shape
+    image_height, image_width, depth = image.shape
     # Convert the BGR image to RGB before processing.
     results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     if not results.pose_landmarks:
       continue
 
-    landmarks = MessageToDict(results.pose_landmarks)
-
     (path, filename) = os.path.split(file)
     file_name = '{}/{}.json'.format(path, filename)
+
+    landmarks = MessageToDict(results.pose_landmarks)
+
+    pose_angle = {}
+    pose_angle['landmarks'] = landmarks['landmark']
+
+    shape = {}
+    shape['width'] = image_width
+    shape['height'] = image_height
+    shape['depth'] = depth
+
+    pose_angle['shape'] = shape
+    pose_angle['keep_time'] = 0
+
+    action = {}
+    action['name'] = filename
+    action['action_time'] = 7
+    action['mode'] = 'upper'
+
+    pose_angles = []
+    pose_angles.append(pose_angle)
+    action['pose'] = pose_angles
+
+
     with open(file_name, "w") as outfile:
-        json.dump(landmarks['landmark'], outfile)
+        json.dump(action, outfile)
 
     # Draw pose landmarks on the image.
     annotated_image = image.copy()

@@ -7,11 +7,12 @@ ANGLE_THRESHOLD = 300
 RATE_THRESHOLD = 0.9
 
 class ActionClassification:
-    def __init__(self):
+    def __init__(self, context):
         self.m_action_config = []
         self.m_action_queue = []
         self.m_pose_angles = []
-        self.m_image = None
+        self.m_context = context
+
 
         return
     def setActionSet(self, actions):
@@ -22,6 +23,7 @@ class ActionClassification:
             for j_action in actions:
                 action = Action()
                 action.m_name = j_action['name']
+                action.m_en_name = j_action['en_name']
                 action.m_action_time = j_action['action_time']
 
                 pose_angles = j_action['pose']
@@ -69,10 +71,14 @@ class ActionClassification:
         return is_back
 
     def debugAngles(self, texts):
-        height = 100
-        for text in texts:
-            cv2.putText(self.m_image, text, (50, height), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
-            height += 50
+        try:
+            height = 100
+            for text in texts:
+                #self.m_context.m_image = Util.paint_chinese_opencv(self.m_context.m_image, text, (50, height), (0, 0, 255))
+                cv2.putText(self.m_context.m_image, text, (50, height), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
+                height += 50
+        except Exception as e :
+            print ('debugAngles:{}'.format(e))
 
         return
 
@@ -111,7 +117,8 @@ class ActionClassification:
                         is_back = True
                         print ('is_back:True')
 
-                debug_acitions_angle.append( '{},diff:{}'.format(action.m_name, min_diff))
+                action.m_current_pose_idx = min_idx
+                debug_acitions_angle.append( '{},diff:{}'.format(action.m_en_name, min_diff))
 
             self.debugAngles(debug_acitions_angle)
 

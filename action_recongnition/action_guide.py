@@ -76,7 +76,7 @@ class ActionGuide:
 
         return
 
-    def guideAction(self, pose, protobuf_landmarks, image):
+    def guideAction(self, pose, image):
         #查看用户姿态角度是否做到当前角度，如果没做到就绘制当前角度，否则绘制下一个姿态
 
         try:

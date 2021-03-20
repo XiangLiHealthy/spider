@@ -7,9 +7,10 @@ from action_classification import ActionClassification
 from action_counter import ActionCounter
 from action_score import ActionScore
 import cv2
+from recong_result import RecongResult
 
 class ActionRecongnition:
-    def __init__(self, queue):
+    def __init__(self, queue, recong_queue):
         try:
             self.m_guide_name = '' #'侧平举'
             self.m_guide_flag = False
@@ -32,6 +33,7 @@ class ActionRecongnition:
             self.m_curent_score = 0.0
 
             self.m_task_queue = queue
+            self.m_recong_queue = recong_queue
             self.m_pose = None
             self.m_last_time = time.clock()
 
@@ -73,8 +75,6 @@ class ActionRecongnition:
             count = self.m_counter.m_counter
             score = self.m_curent_score
 
-
-
             text = '{} : {}, score: {}'.format(name, count, score)
 
             #cv2.putText(image, text, (40, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
@@ -84,7 +84,7 @@ class ActionRecongnition:
 
         return image
 
-    def guide_action(self, pose, protobuf_landmarks, image):
+    def guide_action(self, pose, image):
         # guide action if set aciton name
         if '' != self.m_guide_name:
             self.m_possible_action = self.m_classifier.getActionByName(self.m_guide_name)
@@ -96,7 +96,7 @@ class ActionRecongnition:
         self.m_guider.setCurrentAction(self.m_possible_action)
 
         #find action that need guide
-        self.m_guider.guideAction(pose, protobuf_landmarks, image)
+        self.m_guider.guideAction(pose, image)
 
         return image
     def getFPS(self):
@@ -106,17 +106,16 @@ class ActionRecongnition:
 
         return int(fps)
 
-    def recong(self, protobuf_landmarks, image):
-        if protobuf_landmarks == None:
+    def recong(self, landmarks, image):
+        if landmarks == None:
             return image
 
         self.m_image = image
-        landmarks = MessageToDict(protobuf_landmarks)
         pose_angle = Util.translateLandmarks(landmarks['landmark'], image.shape, image)
 
         self.recong_aciton(pose_angle)
 
-        self.guide_action(pose_angle, protobuf_landmarks, image)
+        self.guide_action(pose_angle, image)
 
         self.draw_result(image)
 
@@ -143,9 +142,8 @@ class ActionRecongnition:
                 #if cv2.waitKey(5) & 0xFF == 27:
                 #    break
 
-                current_time = time.clock()
-                print('--------------fps:{}---------'.format(1 / (current_time - self.m_last_time)) )
-                self.m_last_time = current_time
+
+                print('----receive frame----fps:{}---------'.format(self.getFPS()))
 
                 self.m_task_queue.put(image)
 
@@ -158,42 +156,60 @@ class ActionRecongnition:
         return
 
     def recongActionThread(self):
-        try:
-            with self.mp_pose.Pose(
-                    min_detection_confidence=0.5,
-                    min_tracking_confidence=0.5) as self.pose:
+        with self.mp_pose.Pose(
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5) as pose:
 
-                while True:
-                    self.m_image = self.m_task_queue.get()
+            while True:
+                try:
+                    image = self.m_task_queue.get()
 
                     # Flip the image horizontally for a later selfie-view display, and convert
                     # the BGR image to RGB.
-                    self.m_image = cv2.cvtColor(cv2.flip(self.m_image, 1), cv2.COLOR_BGR2RGB)
+                    image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
                     # To improve performance, optionally mark the image as not writeable to
                     # pass by reference.
-                    self.m_image.flags.writeable = False
-                    results = self.pose.process(self.m_image)
+                    image.flags.writeable = False
+                    results = pose.process(image)
 
-                    self.m_image.flags.writeable = True
-                    self.m_image = cv2.cvtColor(self.m_image, cv2.COLOR_RGB2BGR)
+                    image.flags.writeable = True
+                    landmarks = MessageToDict(results.pose_landmarks)
 
-                    self.recong(results.pose_landmarks, self.m_image)
+                    self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
 
-                    # Draw the pose annotation on the image.
-                    self.mp_drawing.draw_landmarks(
-                        self.m_image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS,
-                        mp.solutions.drawing_utils.DrawingSpec(color=(255, 0, 0)))
+                    self.m_recong_queue.put(RecongResult(image, landmarks))
+                    print('----recong thread----fps:{}---'.format(self.getFPS()))
 
-                    #self.m_image = cv2.resize(self.m_image, (1440, 1080))
-                    fps = self.getFPS()
-                    fps_str = 'fps:{}'.format(fps)
-                    print (fps_str)
-                    height, width, _ = self.m_image.shape
-                    self.m_image = cv2.putText(self.m_image, fps_str, (width - 200, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
 
-                    cv2.imshow('MediaPipe Pose', self.m_image)
-                    if cv2.waitKey(5) & 0xFF == 27:
-                        break
+                except Exception as e :
+                    print ('recongActionThread:{}'.format(e))
+
+        return
+
+    def drawVideoThread(self):
+        try:
+            while True:
+                print ('drawvVideoThread wait....')
+                recong_result = self.m_recong_queue.get()
+                print('drawvideoThread get a result')
+
+                self.m_image = recong_result.m_image
+                results = recong_result.m_result
+
+                self.m_image = cv2.cvtColor(self.m_image, cv2.COLOR_RGB2BGR)
+
+                self.recong(results, self.m_image)
+
+                #self.m_image = cv2.resize(self.m_image, (1440, 1080))
+                fps = self.getFPS()
+                fps_str = 'fps:{}'.format(fps)
+                print (fps_str)
+                height, width, _ = self.m_image.shape
+                self.m_image = cv2.putText(self.m_image, fps_str, (width - 200, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
+
+                cv2.imshow('MediaPipe Pose', self.m_image)
+                if cv2.waitKey(5) & 0xFF == 27:
+                    break
 
 
 

@@ -4,26 +4,33 @@ from multiprocessing import Queue, Process
 import random
 import time
 
-queue = Queue(30)
-action_recong_engine = ActionRecongnition(queue)
+image_queue = Queue(50)
+recong_queue = Queue(60)
+
+action_recong_engine = ActionRecongnition(image_queue, recong_queue)
+
 
 def getter(name, queue):
   action_recong_engine.fetchFrameThread()
   print('get process exit')
 
-  # block为True,就是如果队列中无数据了。
-  #   |—————— 若timeout默认是None，那么会一直等待下去。
-  #   |—————— 若timeout设置了时间，那么会等待timeout秒后才会抛出Queue.Empty异常
-  # block 为False，如果队列中无数据，就抛出Queue.Empty异常
 
-if __name__ == "__main__":
+def putter(name, queue):
+  action_recong_engine.recongActionThread()
+
+
+if __name__ == '__main__':
+  queue = Queue()
+  getter_process = Process(target=getter, args=("Getter", queue))
+  putter_process = Process(target=putter, args=("Putter", queue))
+  getter_process.start()
+  putter_process.start()
+
+
   print('------start------')
 
   try:
-    getter_process = Process(target=getter, args=("Getter", queue))
-    getter_process.start()
-
-    action_recong_engine.recongActionThread()
+    action_recong_engine.drawVideoThread()
   except Exception as e:
     print (e)
 

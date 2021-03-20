@@ -1,20 +1,12 @@
-import cv2
+import time
 import mediapipe as mp
 from google.protobuf.json_format import MessageToDict
-from numpy import unicode
-
 from util import Util
 from action_guide import ActionGuide
 from action_classification import ActionClassification
 from action_counter import ActionCounter
 from action_score import ActionScore
-from possible_action import PossibleAction
-
-from PIL import ImageFont, ImageDraw, Image
 import cv2
-import numpy as np
-from queue import Queue
-from multiprocessing import Pipe, Process
 
 class ActionRecongnition:
     def __init__(self, queue):
@@ -41,7 +33,7 @@ class ActionRecongnition:
 
             self.m_task_queue = queue
             self.m_pose = None
-            self.out_pipe, self.in_pipe = Pipe(True)
+            self.m_last_time = time.clock()
 
         except Exception as e :
             print ('ActionRecongnition init :{}'.format(e))
@@ -74,13 +66,14 @@ class ActionRecongnition:
     def draw_result(self, image):
         try:
             #draw action name ,count, score
-
             if None == self.m_possible_action:
                 return image
 
             name = self.m_possible_action.m_name
             count = self.m_counter.m_counter
             score = self.m_curent_score
+
+
 
             text = '{} : {}, score: {}'.format(name, count, score)
 
@@ -106,6 +99,12 @@ class ActionRecongnition:
         self.m_guider.guideAction(pose, protobuf_landmarks, image)
 
         return image
+    def getFPS(self):
+        current_time = time.clock()
+        fps = (1 / (current_time - self.m_last_time))
+        self.m_last_time = current_time
+
+        return int(fps)
 
     def recong(self, protobuf_landmarks, image):
         if protobuf_landmarks == None:
@@ -144,9 +143,13 @@ class ActionRecongnition:
                 #if cv2.waitKey(5) & 0xFF == 27:
                 #    break
 
+                current_time = time.clock()
+                print('--------------fps:{}---------'.format(1 / (current_time - self.m_last_time)) )
+                self.m_last_time = current_time
+
                 self.m_task_queue.put(image)
 
-                #time.sleep(0.01)
+                time.sleep(0.02)
 
             cap.release()
         except Exception as e :
@@ -159,6 +162,7 @@ class ActionRecongnition:
             with self.mp_pose.Pose(
                     min_detection_confidence=0.5,
                     min_tracking_confidence=0.5) as self.pose:
+
                 while True:
                     self.m_image = self.m_task_queue.get()
 
@@ -172,68 +176,25 @@ class ActionRecongnition:
 
                     self.m_image.flags.writeable = True
                     self.m_image = cv2.cvtColor(self.m_image, cv2.COLOR_RGB2BGR)
-                    # image_tmp = image
 
                     self.recong(results.pose_landmarks, self.m_image)
+
                     # Draw the pose annotation on the image.
                     self.mp_drawing.draw_landmarks(
                         self.m_image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS,
                         mp.solutions.drawing_utils.DrawingSpec(color=(255, 0, 0)))
 
                     #self.m_image = cv2.resize(self.m_image, (1440, 1080))
+                    fps = self.getFPS()
+                    height, width, _ = self.m_image.shape
+                    self.m_image = Util.paint_chinese_opencv(self.m_image, 'fps:{}'.format(fps), (width - 200, 10), (0, 0, 255))
                     cv2.imshow('MediaPipe Pose', self.m_image)
                     if cv2.waitKey(5) & 0xFF == 27:
                         break
 
+
+
         except Exception as e :
             print ('recongActionThread:{}'.format(e))
-
-        return
-
-    def startup(self):
-        url = "rtsp://admin:admin@192.168.17.62:8554/live"
-        url = "rtsp://admin:admin@192.168.18.143:8554/live"
-        #url = "./sample/action.mp4"
-
-        # For webcam input:
-        cap = cv2.VideoCapture(url)
-        with self.mp_pose.Pose(
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5) as pose:
-            while cap.isOpened():
-                success, self.m_image = cap.read()
-                if not success:
-                    print("Ignoring empty camera frame.")
-                    # If loading a video, use 'break' instead of 'continue'.
-                    break
-
-                # Flip the image horizontally for a later selfie-view display, and convert
-                # the BGR image to RGB.
-                self.m_image = cv2.cvtColor(cv2.flip(self.m_image, 1), cv2.COLOR_BGR2RGB)
-                # To improve performance, optionally mark the image as not writeable to
-                # pass by reference.
-                self.m_image.flags.writeable = False
-                results = pose.process(self.m_image)
-
-                self.m_image.flags.writeable = True
-                self.m_image = cv2.cvtColor(self.m_image, cv2.COLOR_RGB2BGR)
-                #image_tmp = image
-
-                self.recong(results.pose_landmarks, self.m_image)
-                # Draw the pose annotation on the image.
-                self.mp_drawing.draw_landmarks(
-                    self.m_image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS,
-                    mp.solutions.drawing_utils.DrawingSpec(color=(255, 0, 0)))
-
-                self.m_image = cv2.resize(self.m_image, (1440, 1080))
-                cv2.imshow('MediaPipe Pose', self.m_image)
-                if cv2.waitKey(5) & 0xFF == 27:
-                    break
-
-            cap.release()
-
-        return
-
-    def stop(self):
 
         return

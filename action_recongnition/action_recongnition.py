@@ -125,7 +125,7 @@ class ActionRecongnition:
     def fetchFrameThread(self):
         url = "rtsp://admin:admin@192.168.17.62:8554/live"
         url = "rtsp://admin:admin@192.168.18.143:8554/live"
-        #url = "./sample/action.mp4"
+        url = "./sample/action.mp4"
 
         try:
             # For webcam input:
@@ -186,8 +186,11 @@ class ActionRecongnition:
 
                     #self.m_image = cv2.resize(self.m_image, (1440, 1080))
                     fps = self.getFPS()
+                    fps_str = 'fps:{}'.format(fps)
+                    print (fps_str)
                     height, width, _ = self.m_image.shape
-                    self.m_image = Util.paint_chinese_opencv(self.m_image, 'fps:{}'.format(fps), (width - 200, 10), (0, 0, 255))
+                    self.m_image = cv2.putText(self.m_image, fps_str, (width - 200, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
+
                     cv2.imshow('MediaPipe Pose', self.m_image)
                     if cv2.waitKey(5) & 0xFF == 27:
                         break

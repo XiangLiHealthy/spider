@@ -4,6 +4,10 @@ import math
 import numpy as np
 import copy
 import cv2
+from PIL import ImageFont, ImageDraw, Image
+import cv2
+import numpy as np
+from numpy import unicode
 
 angle_points_config = [
     [28, 26, 24],#right knee
@@ -134,15 +138,18 @@ class Util:
 
         return angles
     def debug_anle(self, angle_points, angles, image):
-        if None == image:
-            return
+        try:
+            if len(image) < 1:
+                return
 
-        idx = 0
-        for angle in angles:
-            text = '{}'.format( int(angle))
-            point = (int(angle_points[idx][K_MID]['x']), int(angle_points[idx][K_MID]['y']))
-            cv2.putText(image, text, point, cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
-            idx += 1
+            idx = 0
+            for angle in angles:
+                text = '{}'.format( int(angle))
+                point = (int(angle_points[idx][K_MID]['x']), int(angle_points[idx][K_MID]['y']))
+                cv2.putText(image, text, point, cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
+                idx += 1
+        except Exception as e :
+            print ('debug_angle:{}'.format(e))
 
     def debug_coodiante2vec(self, point):
         vec = (int(point['x']), int(point['y']))
@@ -164,7 +171,7 @@ class Util:
 
         angles = self.caculateAngles(angle_points)
 
-        #self.debug_anle(angle_points, angles, image)
+        self.debug_anle(angle_points, angles, image)
 
         idx = 2
         #self.debug_one_angle(angle_points[idx], int(angles[idx]), image)
@@ -182,6 +189,21 @@ class Util:
             print ("loadAcitonDB:{}".format(e) )
 
         return None
+
+    def paint_chinese_opencv(self, im, chinese, pos, color):
+        #return im
+
+        img_PIL = Image.fromarray(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
+        font = ImageFont.truetype('NotoSansCJK-Bold.ttc', 25)
+        fillColor = (255, 0, 0)  # (255,0,0)
+        position = pos  # (100,100)
+        if not isinstance(chinese, unicode):
+            chinese = chinese.decode('utf-8')
+        draw = ImageDraw.Draw(img_PIL)
+        draw.text(position, chinese, font=font, fill=fillColor)
+
+        img = cv2.cvtColor(np.asarray(img_PIL), cv2.COLOR_RGB2BGR)
+        return img
 
     #def getAction(self, actions, name):
 Util = Util()

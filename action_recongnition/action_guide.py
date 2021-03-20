@@ -82,6 +82,10 @@ class ActionGuide:
         try:
             #get current index angles
             angles = self.m_current_action.m_pose_angles
+            if len(angles) == 0 :
+                return
+
+            self.m_pose_angle_index = self.m_current_action.m_current_pose_idx
             local_pose = angles[self.m_pose_angle_index]
 
             #cucalute angle difference

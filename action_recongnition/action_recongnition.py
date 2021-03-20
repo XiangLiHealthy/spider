@@ -173,7 +173,9 @@ class ActionRecongnition:
                     results = pose.process(image)
 
                     image.flags.writeable = True
-                    landmarks = MessageToDict(results.pose_landmarks)
+                    landmarks = None
+                    if None != results.pose_landmarks :
+                        landmarks = MessageToDict(results.pose_landmarks)
 
                     self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
 

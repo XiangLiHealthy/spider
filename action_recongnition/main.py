@@ -5,7 +5,7 @@ import random
 import time
 
 image_queue = Queue(50)
-recong_queue = Queue(60)
+recong_queue = Queue(150)
 
 action_recong_engine = ActionRecongnition(image_queue, recong_queue)
 

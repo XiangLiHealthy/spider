@@ -11,6 +11,7 @@ import glob
 
 path = './sample'
 file_list = glob.glob("./sample/*.jpg")
+file_list += glob.glob("./sample/*.png")
 
 # For static images:
 with mp_pose.Pose(
@@ -43,6 +44,7 @@ with mp_pose.Pose(
 
     action = {}
     action['name'] = filename
+    action['en_name'] = filename
     action['action_time'] = 7
     action['mode'] = 'upper'
 

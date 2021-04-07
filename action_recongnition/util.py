@@ -20,6 +20,43 @@ angle_points_config = [
     [11, 13, 15],#left elbow
 ]
 
+joint_lines = [
+    [1, 2],
+    [2, 3],
+    [3, 7],
+    [0, 1],
+    [0, 4],
+    [4, 5],
+    [5, 6],
+    [6, 8],
+    [10, 9],
+    [18, 20],
+    [20, 16],
+    [18, 16],
+    [16, 22],
+    [16, 14],
+    [14, 12],
+    [12, 11],
+    [11, 13],
+    [13, 15],
+    [15, 21],
+    [15, 19],
+    [15, 17],
+    [12, 24],
+    [24, 26],
+    [24, 23],
+    [26, 28],
+    [28, 32],
+    [32, 30],
+    [30, 28],
+    [11, 23],
+    [23, 25],
+    [25, 27],
+    [27, 31],
+    [31, 29],
+    [27, 29]
+]
+
 K_START = 'start'
 K_MID = 'mid'
 K_END = 'end'
@@ -204,6 +241,27 @@ class Util:
 
         img = cv2.cvtColor(np.asarray(img_PIL), cv2.COLOR_RGB2BGR)
         return img
+    def draw_landmark(self, landmarks, m_context, teacher_shape):
+        current_shape = m_context.shape
+        x_scale = teacher_shape['width'] / current_shape[1] * current_shape[1]
+        y_scale = teacher_shape['height'] / current_shape[0] * current_shape[0]
+        for landmark in landmarks :
+            x = landmark['x'] * x_scale
+            y = landmark['y'] * y_scale
+            cv2.circle(m_context, (int(x), int(y)), 5, (255, 0, 0))
+
+        for joint in joint_lines :
+            start = landmarks[joint[0]]
+            end = landmarks[joint[1]]
+
+            start_x = int(start['x'] * x_scale)
+            start_y = int(start['y'] * y_scale)
+            end_x = int(end['x'] * x_scale)
+            end_y = int(end['y'] * y_scale)
+
+            cv2.line(m_context, (start_x, start_y), (end_x, end_y), (255, 0, 0), 15)
+
+        return
 
     #def getAction(self, actions, name):
 Util = Util()

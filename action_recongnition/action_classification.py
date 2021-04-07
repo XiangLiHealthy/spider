@@ -2,8 +2,9 @@ from action import Action
 from possible_action import PossibleAction
 from util import Util
 import cv2
+import numpy as np
 
-ANGLE_THRESHOLD = 300
+ANGLE_THRESHOLD = 500
 RATE_THRESHOLD = 0.9
 
 class ActionClassification:
@@ -34,6 +35,12 @@ class ActionClassification:
                     joint_angle['angles'] = Util.translateLandmarks( angle['landmarks'], shape, None)
                     joint_angle['possible'] = 0
                     action.m_pose_angles.append(joint_angle)
+
+
+                    image = np.zeros((shape[0], shape[1], 3), np.uint8);
+                    Util.draw_landmark(angle['landmarks'], image, angle['shape'])
+                    Util.translateLandmarks(angle['landmarks'], shape, image)
+                    cv2.imshow(j_action['en_name'], image)
 
                 action.m_teacher_pose = j_action
                 action.m_match_times = 0

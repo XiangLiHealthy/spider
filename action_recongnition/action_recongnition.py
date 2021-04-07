@@ -12,7 +12,7 @@ from recong_result import RecongResult
 class ActionRecongnition:
     def __init__(self, queue, recong_queue):
         try:
-            self.m_guide_name = '' #'侧平举'
+            self.m_guide_name = '侧平举'
             self.m_guide_flag = False
 
             self.m_classifier = ActionClassification(self)
@@ -35,7 +35,7 @@ class ActionRecongnition:
             self.m_task_queue = queue
             self.m_recong_queue = recong_queue
             self.m_pose = None
-            self.m_last_time = time.clock()
+            self.m_last_time = time.perf_counter()
 
         except Exception as e :
             print ('ActionRecongnition init :{}'.format(e))
@@ -88,7 +88,7 @@ class ActionRecongnition:
         # guide action if set aciton name
         if '' != self.m_guide_name:
             self.m_possible_action = self.m_classifier.getActionByName(self.m_guide_name)
-            self.m_guider.setCurrentAction(self.m_possible_action)
+            #self.m_guider.setCurrentAction(self.m_possible_action)
 
         if None == self.m_possible_action:
             return
@@ -100,7 +100,7 @@ class ActionRecongnition:
 
         return image
     def getFPS(self):
-        current_time = time.clock()
+        current_time = time.perf_counter()
         fps = (1 / (current_time - self.m_last_time))
         self.m_last_time = current_time
 
@@ -123,7 +123,7 @@ class ActionRecongnition:
 
     def fetchFrameThread(self):
         url = "rtsp://admin:admin@192.168.17.62:8554/live"
-        url = "rtsp://admin:admin@192.168.18.143:8554/live"
+        #url = "rtsp://admin:admin@192.168.18.143:8554/live"
         url = "./sample/action.mp4"
 
         try:
@@ -170,6 +170,10 @@ class ActionRecongnition:
                     # To improve performance, optionally mark the image as not writeable to
                     # pass by reference.
                     image.flags.writeable = False
+
+                    #height, weight, depth = image.shape
+                    #image = cv2.resize(image, (640, 480))
+
                     results = pose.process(image)
 
                     image.flags.writeable = True
@@ -209,6 +213,7 @@ class ActionRecongnition:
                 height, width, _ = self.m_image.shape
                 self.m_image = cv2.putText(self.m_image, fps_str, (width - 200, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
 
+                self.m_image = cv2.resize(self.m_image, (1440, 1080))
                 cv2.imshow('MediaPipe Pose', self.m_image)
                 if cv2.waitKey(5) & 0xFF == 27:
                     break

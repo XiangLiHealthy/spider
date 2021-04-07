@@ -2,31 +2,35 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="895a71c8-d066-4fcc-af22-4dd63d2cc172" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/www/yongyao_net.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/spider.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/spider.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/.idea/action_recongnition.iml" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/.idea/action_recongnition.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_classification.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_guide.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_guide.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_model.json" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_model.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_recongnition.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_recongnition.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/ce_ping_ju.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/pa_qiang_1.jpg.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/pa_qiang_2.jpg.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/shen_zhan.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/start.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/ti_ce.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/zhan_li.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/static_image.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/static_image.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/util.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/util.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/www/yongyao_net.py" beforeDir="false" afterPath="$PROJECT_DIR$/www/yongyao_net.py" afterDir="false" />
     </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/spider$yongyao_net.coverage" NAME="yongyao_net Coverage Results" MODIFIED="1617814259328" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/www" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/www/yongyao_net.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="153" column="103" lean-forward="true" selection-start-line="153" selection-start-column="103" selection-end-line="153" selection-end-column="103" />
+              <folding>
+                <element signature="e#0#17#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -42,14 +46,15 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/action_recongnition/action_classification.py" />
+        <option value="$PROJECT_DIR$/www/yongyao_net.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="736" />
-    <option name="y" value="58" />
-    <option name="width" value="1268" />
-    <option name="height" value="1050" />
+    <option name="x" value="813" />
+    <option name="y" value="27" />
+    <option name="width" value="1107" />
+    <option name="height" value="1053" />
   </component>
   <component name="ProjectId" id="1pra874il8vbX372c6d5WFJnMXm" />
   <component name="ProjectLevelVcsManager">
@@ -60,6 +65,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -70,13 +76,12 @@
             <path>
               <item name="spider" type="b2602c69:ProjectViewProjectNode" />
               <item name="spider" type="462c0819:PsiDirectoryNode" />
-              <item name="action_recongnition" type="462c0819:PsiDirectoryNode" />
+              <item name="www" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="ProjectViewState">
@@ -90,8 +95,51 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="yongyao_net" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="spider" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/www" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/www/yongyao_net.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.yongyao_net" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" BundledDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -102,22 +150,24 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1615943500837</updated>
+      <workItem from="1617806022262" duration="7520000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5768000" />
+    <option name="totallyTimeSpent" value="13288000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="736" y="58" width="1268" height="1050" extended-state="0" />
+    <frame x="813" y="27" width="1107" height="1053" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2536825" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.29688972" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.4004329" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -125,7 +175,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32899022" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.32721382" />
       <window_info anchor="bottom" id="Python Console" order="12" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -134,6 +184,9 @@
       <window_info anchor="right" id="Word Book" order="4" side_tool="true" />
       <window_info anchor="right" id="Database" order="5" />
     </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -147,6 +200,31 @@
           <url>file://$PROJECT_DIR$/action_recongnition/action_classification.py</url>
           <line>13</line>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/www/yongyao_net.py</url>
+          <line>114</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/www/yongyao_net.py</url>
+          <line>169</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/www/yongyao_net.py</url>
+          <line>197</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/www/yongyao_net.py</url>
+          <line>159</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/www/yongyao_net.py</url>
+          <line>153</line>
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -198,6 +276,16 @@
         <state>
           <folding>
             <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/www/yongyao_net.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="153" column="103" lean-forward="true" selection-start-line="153" selection-start-column="103" selection-end-line="153" selection-end-column="103" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
           </folding>
         </state>
       </provider>

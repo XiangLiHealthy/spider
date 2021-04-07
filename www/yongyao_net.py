@@ -11,7 +11,7 @@ from time import sleep
 import data_store
 import downloader
 
-path = '/home/xiangbaosong/work'
+path = '~'
 
 class SpiderDisesea:
     def __init__(self):
@@ -107,12 +107,12 @@ class SpiderDisesea:
             print (e)
             return ''
 
-    def save(self, first_aid, content):
+    def save(self, contents):
         try:
-            headers = ['名称', '内容', '主分类', '二级分类']
-            file = path + '/丁香医生-急救常识.csv'
+            headers = ['名称', '种类', '安全等级', '详细内容']
+            file = path + '/妊娠期糖尿病药物信息.csv'
 
-            datas = [first_aid['name'], content, first_aid['main_category'], first_aid['child_category']]
+            datas = [contents['drug'], contents['classify'], contents['degree'], contents['detail']]
 
             data_store.write_content(file, headers, datas)
         except Exception as e :
@@ -121,48 +121,83 @@ class SpiderDisesea:
         return
 
     def get_all_catory(self):
-        url = "http://www.yongyao.net/new/yhyyfjcxb.aspx"
-        self.browser.get(url)
+        try:
+            url = "http://www.yongyao.net/new/yhyyfjcxb.aspx"
+            self.browser.get(url)
 
-        #get options lables
-        catorys = []
-        options = self.browser.find_element_by_xpath("//div[@id = 'selyplb']/option")
-        for option in options :
-            catorys.append(option.value)
+            #get options lables
+            catorys = []
+            options = self.browser.find_elements_by_xpath("//select/option")
+            for option in options :
+                if '请选择类别' == option.text :
+                    continue
+
+                catorys.append(option)
+        except Exception as e :
+            print('get all catogry error:{}'.format(e))
 
         return catorys
 
     def get_all_drug_button(self, catogory):
-        #get select tag
-        catory_box = self.browser.find_element_by_xpath("//select[@id = 'selyplb']")
+        try:
+            catogory.click()
 
-        # set value
-        catory_box.send_keys(catogory)
+            # click button
+            catogory_select = self.browser.find_element_by_xpath("//div[@class = 'jlhstitlepagebtn']")
+            catogory_select.click()
 
-        # click button
-        catogory_select = self.browser.find_element_by_xpath("//div[@class = 'mainbody']/div[@class = 'leftmain_zy']/div[0]/div[0]/div[0]/div[0]/div[1]")
-        catogory_select.click()
+            # get all button in per page
 
-        # get all button in per page
+            drug_buttons = []
+            while (True) :
+                drug_button = self.browser.find_elements_by_xpath("//div[class = 'mainbody']/div[1]/div[0]/div[1]/div[0]/div[1]/span[@id = 'Labelypmc']/div[@id]")
+                drug_button = self.browser.find_elements_by_xpath("//span[@id = 'Labelypmc']/div[@id]")
+                drug_buttons += drug_button
+                if len(drug_button) < 14 :
+                    break
+                #page_title = self.browser.find_elements_by_xpath("//span[@id = 'Labelypmc']/div[0]/span")
 
-        drug_buttons = []
-        while (True) :
-            drug_buttons += self.browser.find_element_by_xpath("//span[@id = 'Labelypmc']/div[@id]")
-            page_num = self.browser.find_element_by_xpath("//div[@class = 'jlhspagenum']")
-            for num in page_num:
-                if '下一页' == num.value
-                    if hasattr(num, 'href'):
-                        num.click()
-                        continue
-                    else:
-                        break
+                page_num = self.browser.find_elements_by_xpath("//div[@class = 'jlhspagenum']")
+                for num in page_num:
+                    if '下一页' == num.text :
+                        if hasattr(num, 'href'):
+                            num.click()
+                            continue
 
+                break
 
-        return
+        except Exception as e:
+            print ('get_all_drug_button error:{}'.format(e))
+
+        return drug_buttons
 
     def get_content(self, drug_button):
+        try:
+            # click drug button
+            drug_button.click()
 
-        return
+            # submit select
+            select_button = self.browser.find_element_by_xpath("//div[@class = 'jlhstitlepagebtn1']")
+            select_button.click()
+
+            contents = {}
+            contents['degree'] = ''
+            contents['detail'] = ''
+
+            # get degree
+            degrees = self.browser.find_elements_by_xpath("//div[@class = 'ypdjzs']")
+            for degree in degrees :
+                contents['degree'] += degree.text + '\n'
+
+            # get detail
+            details = self.browser.find_elements_by_xpath("//div[@class = 'ypdjzsnr']")
+            for detail in details :
+                contents['detail'] += detail.text + '\n'
+
+        except Exception as e :
+            print ('get content error:{}'.format(e))
+
+        return contents
 
     def perform(self) :
         try:
@@ -172,28 +207,16 @@ class SpiderDisesea:
             catorys = self.get_all_catory()
 
             # 获取所有种类下的药品名称
-            drug_buttons = []
             for catogory in catorys :
-                drug_button = self.get_all_drug_button(catogory)
-                drug_buttons.append(drug_button)
+                drug_buttons = self.get_all_drug_button(catogory)
 
-            # 选择每个药物，并解析内容
-            for durg_button in drug_buttons :
-                content = self.get_content(drug_buttons)
-                self.save()
-            # 保存为excel文档
+                # 选择每个药物，并解析内容
+                for drug_button in drug_buttons :
+                    contents = self.get_content(drug_button)
+                    contents['drug'] = drug_button.text
+                    contents['classify'] = catogory
 
-            classifies = self.get_items()
-            print ('all classify count:{}'.format(len(classifies)))
-            #self.reconnet_chrome()
-
-            index = 0
-            for classify in classifies :
-                content = self.get_content(classify['name'], classify['url'])
-                self.save(classify, content)
-                print ('get count : {}'.format(index))
-                index += 1
-                sleep(1)
+                    self.save(contents)
         finally:
             self.browser.close()
 

@@ -37,10 +37,10 @@ class ActionClassification:
                     action.m_pose_angles.append(joint_angle)
 
 
-                    image = np.zeros((shape[0], shape[1], 3), np.uint8);
-                    Util.draw_landmark(angle['landmarks'], image, angle['shape'])
-                    Util.translateLandmarks(angle['landmarks'], shape, image)
-                    cv2.imshow(j_action['en_name'], image)
+                    # image = np.zeros((shape[0], shape[1], 3), np.uint8);
+                    # Util.draw_landmark(angle['landmarks'], image, angle['shape'])
+                    # Util.translateLandmarks(angle['landmarks'], shape, image)
+                    # cv2.imshow(j_action['en_name'], image)
 
                 action.m_teacher_pose = j_action
                 action.m_match_times = 0

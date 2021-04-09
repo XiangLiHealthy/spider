@@ -5,9 +5,12 @@ from util import Util
 import cv2
 import time
 import math
+from action_counter import ActionCounter
 
 THRESHOLD = 300
 ANGLE_ERROR_THRESHOLD = 10
+KEEP_FINISHED = 'finish'
+KEEP_DOING = 'doing'
 
 class TrainningModel :
     def __init__(self):
@@ -20,11 +23,12 @@ class TrainningModel :
         self.video_manager_ = VideoManager()
         self.teacher_frame_ = None
         self.keep_time_start_ = None
-        self.keep_time_state_ = 'finish'
+        self.keep_time_state_ = KEEP_FINISHED
 
         self.point_ = {}
         self.point_['x'] = 40
         self.point_['y'] = 40
+        self.counter_ = ActionCounter()
 
         return
 
@@ -56,7 +60,7 @@ class TrainningModel :
 
         self.point(error_angles, user_landmarks, user_image)
 
-        self.count()
+        self.counting(error_angles)
 
         self.score()
 
@@ -110,7 +114,34 @@ class TrainningModel :
 
         return
 
-    def count(self):
+    def counting(self, error_angles):
+        next_idx = 0
+
+        # are there error angles,
+        if len(error_angles) > 0 :
+            if KEEP_DOING == self.keep_time_state_ :
+                if g_config.TEACH_FINISH == g_config.getTeachState() :
+                    next_idx = self.pose_idx_ + 1
+                else:
+                    next_idx = self.pose_idx_
+            else:
+                next_idx = self.pose_idx_
+        else:
+            if KEEP_DOING == self.keep_time_state_ :
+                next_idx = self.pose_idx_
+            else :
+                next_idx = self.pose_idx_ + 1
+
+        if next_idx != self.pose_idx_ :
+            self.keep_time_state_ = KEEP_FINISHED
+            # record actual keep time
+
+        if next_idx == len(self.m_current_action.m_pose_angles) :
+            self.count += 1
+            self.counter_.addAction(self.m_current_action.m_name)
+            self.pose_idx_ = 0
+        else :
+            self.pose_idx_ = next_idx
 
         return
 
@@ -133,14 +164,14 @@ class TrainningModel :
         teacher_pose = self.m_current_action.m_teacher_pose[self.pose_idx_]
         need_keep_time = teacher_pose['keep_time']
 
-        if self.keep_time_state_ == 'finish' :
-            self.keep_time_state_ = 'keeping'
+        if self.keep_time_state_ == KEEP_FINISHED :
+            self.keep_time_state_ = KEEP_DOING
             self.keep_time_start_ = time.perf_counter()
 
         current_time = time.perf_counter()
         kept_time = current_time - self.keep_time_start_
         if kept_time > need_keep_time :
-            self.keep_time_state_ = 'finish'
+            self.keep_time_state_ = KEEP_FINISHED
         else:
             reciporacal = need_keep_time - kept_time
             text = 'reciporacal:{}'.format(reciporacal)

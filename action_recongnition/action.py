@@ -11,6 +11,7 @@ class Action:
         self.m_need_times = 0xfffffffff
         self.m_current_pose_idx = 0
         self.m_en_name = ''
+        self.video_paht = ''
 
     def match(self, angles):
 

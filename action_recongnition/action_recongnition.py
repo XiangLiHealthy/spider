@@ -8,6 +8,9 @@ from action_counter import ActionCounter
 from action_score import ActionScore
 import cv2
 from recong_result import RecongResult
+from ConfigManager import g_config
+from EvaluationModel import EvaluationModel
+from TrainningModel import TrainningModel
 
 class ActionRecongnition:
     def __init__(self, queue, recong_queue):
@@ -36,6 +39,12 @@ class ActionRecongnition:
             self.m_recong_queue = recong_queue
             self.m_pose = None
             self.m_last_time = time.perf_counter()
+
+            self.m_evaluation = EvaluationModel()
+            self.m_evaluation_result = None
+            self.m_train = TrainningModel()
+            self.m_evaluation_state = g_config.STATE_NEED
+            self.m_train_state = g_config.TRAIN_DOING
 
         except Exception as e :
             print ('ActionRecongnition init :{}'.format(e))
@@ -105,10 +114,29 @@ class ActionRecongnition:
         self.m_last_time = current_time
 
         return int(fps)
+    def evaluate(self, user_landmarks, user_image):
+        state = g_config.getEvaluationState()
+        if (state == g_config.STATE_FINISH):
+            return
 
-    def recong(self, landmarks, image):
-        if landmarks == None:
-            return image
+        if 'success' != self.m_evaluation.perform(user_landmarks, user_image):
+            print('evaluate action failed')
+
+        g_config.setEvaluationState(g_config.STATE_FINISH)
+
+        return
+
+    def train(self, user_landmarks, user_image):
+        if self.m_train_state == g_config.TRAIN_OK :
+            return
+
+        self.m_train_state = self.m_train.trainActions(user_image, user_image)
+
+        return
+
+    def freeStyleRecong(self, landmarks, image):
+        if self.m_train_state == g_config.TRAIN_DOING :
+            return
 
         self.m_image = image
         pose_angle = Util.translateLandmarks(landmarks['landmark'], image.shape, image)
@@ -204,7 +232,9 @@ class ActionRecongnition:
 
                 self.m_image = cv2.cvtColor(self.m_image, cv2.COLOR_RGB2BGR)
 
-                self.recong(results, self.m_image)
+                self.evaluate(recong_result, self.m_image)
+                self.train(recong_result, self.m_image)
+                self.freeStyleRecong(recong_result, self.m_image)
 
                 #self.m_image = cv2.resize(self.m_image, (1440, 1080))
                 fps = self.getFPS()

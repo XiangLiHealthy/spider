@@ -1,0 +1,45 @@
+{
+  "train_task" : [
+    {
+      "action_name" : "shen_zhan",
+      "frequency" : 1,
+      "count" : 20
+    }
+  ],
+  "evaluation" : {
+    "last_time" : "2021-04-08",
+    "cycle" : 7,
+    "actions" : [
+      {
+        "action_name" : "ce_ping_ju",
+        "start_pose_angles" : [20, 30, 30, 40, 32, 43, 34, 34],
+        "end_pose_angles" :  [20, 30, 30, 40, 32, 43, 34, 34],
+        "score" : 80
+      }
+    ]
+  },
+  "record" : [
+    {
+      "action_name" : "shen_zhan",
+      "count" : 20,
+      "datetime" : "2021-04-08 12:00:00",
+      "score" : {
+        "angle" : 80,
+        "speed" : 70,
+        "keep_time" : 60,
+        "total" : 75
+      }
+    },
+    {
+      "action_name" : "shen_zhan",
+      "count" : 20,
+      "datetime" : "2021-04-05 12:00:00",
+      "score" : {
+        "angle" : 80,
+        "speed" : 70,
+        "keep_time" : 60,
+        "total" : 75
+      }
+    }
+  ]
+}

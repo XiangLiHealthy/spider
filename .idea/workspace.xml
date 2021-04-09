@@ -2,20 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="895a71c8-d066-4fcc-af22-4dd63d2cc172" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/action_recongnition/makeVideoConfig.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/spider.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/spider.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/action_recongnition/ConfigManager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/action_recongnition/EvaluationModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/action_recongnition/TrainningModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/action_recongnition/VideoManager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_classification.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_model.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/ce_ping_ju.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/pa_qiang_1.jpg.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/pa_qiang_2.jpg.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/shen_zhan.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/start.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/ti_ce.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/sample/zhan_li.png.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/www/yongyao_net.py" beforeDir="false" afterPath="$PROJECT_DIR$/www/yongyao_net.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action_recongnition/action.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action_recongnition/action_recongnition.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_recongnition.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,6 +83,12 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/action_recongnition" />
+      <recent name="$PROJECT_DIR$/action_recongnition/video" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.makeVideoConfig">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -238,12 +237,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/action_recongnition/action_recongnition.py</url>
-          <line>147</line>
+          <line>175</line>
           <option name="timeStamp" value="37" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/action_recongnition/action_recongnition.py</url>
-          <line>153</line>
+          <line>181</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
       </breakpoints>

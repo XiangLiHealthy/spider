@@ -161,7 +161,7 @@ class TrainningModel :
                 text = 'error:{}'.format(int(error_angles[idx]))
                 cv2.putText(user_image, text, (point['x'], point['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
                             (0, 0, 255), 2)
-                
+
         return
 
     def pointSpeed(self, user_landmarks, user_image):

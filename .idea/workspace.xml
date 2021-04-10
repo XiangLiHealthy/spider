@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="895a71c8-d066-4fcc-af22-4dd63d2cc172" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/action_recongnition/ConfigManager.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/action_recongnition/EvaluationModel.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/action_recongnition/TrainningModel.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/action_recongnition/VideoManager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action_recongnition/action_recongnition.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/action_recongnition.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action_recongnition/TrainningModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/action_recongnition/TrainningModel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -116,6 +116,7 @@ class ActionRecongnition:
         return int(fps)
     def evaluate(self, user_landmarks, user_image):
         state = g_config.getEvaluationState()
+        print ('evaluation state is : {}'.format(state))
         if (state == g_config.STATE_FINISH):
             return
 
@@ -127,10 +128,14 @@ class ActionRecongnition:
         return
 
     def train(self, user_landmarks, user_image):
-        if self.m_train_state == g_config.TRAIN_OK :
+        train_state = g_config.getTeachState()
+        print('train state is : {}'.format(train_state))
+
+        if train_state == g_config.TRAIN_OK :
+
             return
 
-        self.m_train_state = self.m_train.trainActions(user_image, user_image)
+        self.m_train_state = self.m_train.trainActions(user_landmarks, user_image)
 
         return
 

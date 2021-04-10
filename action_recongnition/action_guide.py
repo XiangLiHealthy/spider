@@ -4,6 +4,7 @@ from google.protobuf.json_format import Parse
 import json
 import dict_to_protobuf as d2p
 import cv2
+from util import joint_lines
 
 POSE_THRESHOLD = 300
 

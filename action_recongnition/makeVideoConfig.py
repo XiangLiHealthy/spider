@@ -103,6 +103,7 @@ class VideoConfigMaker :
       action['en_name'] = filename
       action['mode']    = 'full_body'
       action['pose']    = landmarks
+      action['video_file'] = filename
 
     except Exception as e :
       print ('get completed info failed:{}'.format(e))

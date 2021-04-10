@@ -2539,7 +2539,7 @@
       },
       {
         "frame_num": 14.0,
-        "keep_time": 0,
+        "keep_time": 5,
         "landmarks": [
           {
             "visibility": 1.0,
@@ -2746,9 +2746,10 @@
           "width": 1336
         },
         "time_pose_ms": 933.3333333333334,
-        "tips": ""
+        "tips": "两眼平时前方，挺胸收腹"
       }
-    ]
+    ],
+    "video_file": "ce_ping_ju.mp4"
   },
   {
     "action_time": 8.0,
@@ -5921,7 +5922,8 @@
         "time_pose_ms": 933.3333333333334,
         "tips": ""
       }
-    ]
+    ],
+    "video_file": "shen_zhan.mp4"
   },
   {
     "action_time": 12.0,
@@ -17743,8 +17745,9 @@
           "width": 1336
         },
         "time_pose_ms": 3933.333333333333,
-        "tips": ""
+        "tips": "很好，继续努力"
       }
-    ]
+    ],
+    "video_file": "ti_ce.mp4"
   }
 ]

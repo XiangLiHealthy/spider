@@ -1,6 +1,9 @@
+import cv2
+
 class VideoManager :
     def __init__(self):
         self.file_name_ = ''
+        self.cap_ = None
 
         return
 
@@ -9,10 +12,14 @@ class VideoManager :
             return
 
         # laoding video
+        self.cap_ = cv2.VideoCapture(file_name)
 
         return
 
     def getFrameByIdx(self, idx):
+        self.cap_.set(cv2.CAP_PROP_POS_FRAMES, idx)
 
-        return
+        success, frame = self.cap_.read()
+
+        return frame
 

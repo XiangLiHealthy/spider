@@ -202,6 +202,28 @@ class Util:
         cv2.putText(image, 'mid:{}'.format(angle), mid, cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
         cv2.putText(image, 'end', end, cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
 
+    def debug_landmarks(self, landmarks, shape, image):
+        try:
+            for landmark in landmarks:
+                x = landmark['x'] * shape[1]
+                y = landmark['y'] * shape[0]
+                cv2.circle(image, (int(x), int(y)), 5, (255, 0, 0))
+
+            for joint in joint_lines:
+                start = landmarks[joint[0]]
+                end = landmarks[joint[1]]
+
+                start_x = int(start['x'] * shape[1])
+                start_y = int(start['y'] * shape[0])
+                end_x = int(end['x'] * shape[1])
+                end_y = int(end['y'] * shape[0])
+
+                cv2.line(image, (start_x, start_y), (end_x, end_y), (0, 0, 255), 15)
+        except Exception as e :
+            print ('debug_landmarks error:{}'.format(e))
+
+        return
+
     def translateLandmarks(self, pose_landmarks, shape , image ):
 
         angle_points = self.getAllAnglePoints(pose_landmarks, shape)
@@ -209,6 +231,7 @@ class Util:
         angles = self.caculateAngles(angle_points)
 
         self.debug_anle(angle_points, angles, image)
+        self.debug_landmarks(pose_landmarks, shape, image)
 
         idx = 2
         #self.debug_one_angle(angle_points[idx], int(angles[idx]), image)

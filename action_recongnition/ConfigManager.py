@@ -21,6 +21,8 @@ class ConfigManager :
             self.model_config_ = ''
             self.record_config_ = ''
 
+            self.loadRecord()
+            self.loadActionModel()
         except Exception as e :
             print ('config manager init error:{}'.format(e))
 
@@ -57,8 +59,8 @@ class ConfigManager :
                     return self.EVALUATION_NEED
 
                 cur_date = date.today()
-                period = cur_date - date.fromisoformat(last_date).today()
-                if period > cycle :
+                period = cur_date - date.fromisoformat(last_date)
+                if period.days > cycle :
                     return self.EVALUATION_NEED
         except Exception as e :
             print ('getEvaluationState error:{}'.format(e))
@@ -80,8 +82,9 @@ class ConfigManager :
         return
 
     def getTrainActions(self):
+        train_actions = None
         try:
-            train_actions = self.record_config_['train_actions']
+            train_actions = self.record_config_['train_task']
             records = self.record_config_['record']
         except Exception as e :
             print ('getTrainAction error:{}'.format(e))

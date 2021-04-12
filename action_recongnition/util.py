@@ -218,7 +218,7 @@ class Util:
                 end_x = int(end['x'] * shape[1])
                 end_y = int(end['y'] * shape[0])
 
-                cv2.line(image, (start_x, start_y), (end_x, end_y), (0, 0, 255), 15)
+                cv2.line(image, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
         except Exception as e :
             print ('debug_landmarks error:{}'.format(e))
 
@@ -230,7 +230,7 @@ class Util:
 
         angles = self.caculateAngles(angle_points)
 
-        self.debug_anle(angle_points, angles, image)
+        #self.debug_anle(angle_points, angles, image)
         self.debug_landmarks(pose_landmarks, shape, image)
 
         idx = 2

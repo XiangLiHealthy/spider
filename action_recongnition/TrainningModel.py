@@ -9,7 +9,7 @@ from action_counter import ActionCounter
 from TTS import TTS
 
 THRESHOLD = 300
-ANGLE_ERROR_THRESHOLD = 10
+ANGLE_ERROR_THRESHOLD = 50
 KEEP_FINISHED = 'finish'
 KEEP_DOING = 'doing'
 
@@ -24,12 +24,14 @@ class TrainningModel :
             self.count = 0
             self.video_manager_ = VideoManager()
             self.teacher_frame_ = None
+            self.last_frame_idx = -1
             self.keep_time_start_ = 0
             self.keep_time_state_ = KEEP_FINISHED
 
             self.point_ = {}
             self.point_['x'] = 40
             self.point_['y'] = 40
+            self.LINE_HEIGHT = 25
             self.counter_ = ActionCounter()
             self.tts_ = TTS()
         except Exception as e :
@@ -38,13 +40,15 @@ class TrainningModel :
 
     def setCurrentAction(self):
         try:
-            if self.m_aciton_idx >= len(self.m_teacher_actions) :
+            if self.m_action_idx >= len(self.m_teacher_actions) :
                 return g_config.TRAIN_OK
 
             task = self.m_train_task[self.m_action_idx]
             if self.count >= task['count'] :
                 self.m_action_idx += 1
                 self.count = 0
+
+            self.m_current_action = self.m_teacher_actions[self.m_action_idx]
         except Exception as e :
             print('setCurrentAction error:{}'.format(e))
 
@@ -75,7 +79,8 @@ class TrainningModel :
             self.score()
 
             print('8.show teacher image')
-            cv2.imshow('teacher', self.teacher_frame_)
+            image = cv2.resize(self.teacher_frame_, (1280, 1440))
+            cv2.imshow('teacher', image)
             self.tts_.run()
         except Exception as e :
             print ('trainActions error:{}'.format(e))
@@ -89,7 +94,7 @@ class TrainningModel :
                 return
 
             self.m_train_task = g_config.getTrainActions()
-            self.m_teacher_actions.clear()
+            #self.m_teacher_actions.clear()
 
             for task in self.m_train_task:
                 teacher_action = g_config.getTeacherActions(task['action_name'])
@@ -99,7 +104,7 @@ class TrainningModel :
 
                 self.m_teacher_actions.append(teacher_action)
 
-            print ('get train task count : {}'.format(self.m_teacher_actions))
+            print ('get train task count : {}'.format(len(self.m_teacher_actions)))
         except Exception as e :
             print ('initTrainTask error ;{}'.format(e))
 
@@ -111,7 +116,7 @@ class TrainningModel :
 
             # match current teacher pose with user pose
             user_angles = Util.translateLandmarks(user_landmarks, user_image.shape, user_image)
-            teacher_angles = Util.translateLandmarks(self.m_current_action.m_teacher_pose[self.pose_idx_], self.teacher_frame_.shape, self.teacher_frame_)
+            teacher_angles = Util.translateLandmarks(self.m_current_action.m_teacher_pose[self.pose_idx_]['landmarks'], self.teacher_frame_.shape, self.teacher_frame_)
             diff = Util.caculatePoseDifference(user_angles, teacher_angles)
             if diff > THRESHOLD :
                 for idx in range(0, len(user_angles)) :
@@ -133,13 +138,16 @@ class TrainningModel :
             if g_config.TEACH_FINISH == teach_state :
                 return
 
-            video_path = self.m_current_action.video_path_
+            video_path = self.m_current_action.video_path
             self.video_manager_.setVideo(video_path)
             print('set video path:{}'.format(video_path))
 
             # get action video frame by index
             frame_idx = self.m_current_action.m_teacher_pose[self.pose_idx_]['frame_num']
-            self.teacher_frame_ = self.video_manager_.getFrameByIdx(frame_idx)
+            if self.last_frame_idx != frame_idx :
+                self.teacher_frame_ = self.video_manager_.getFrameByIdx(frame_idx)
+                self.last_frame_idx = frame_idx
+
             print ('get video idx:{}'.format(frame_idx))
         except Exception as e :
             print ('teach error:{}'.format(e))
@@ -149,7 +157,7 @@ class TrainningModel :
     def point(self, error_angles, user_landmarks, user_image):
         try:
             self.point_['x'] = 40
-            self.point_['y'] = 40
+            self.point_['y'] = 20
 
             # 1.pose config  tips
             self.pointConfigTips(user_image)
@@ -202,7 +210,7 @@ class TrainningModel :
             else :
                 self.pose_idx_ = next_idx
 
-            text = '{},count:{}, well done'.format(self.m_current_action.m_en_name, self.count)
+            text = '{},count:{}'.format(self.m_current_action.m_en_name, self.count)
             cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
                         (0, 0, 255), 2)
             self.point_['y'] += 20
@@ -226,7 +234,7 @@ class TrainningModel :
 
             if '' != config_tip :
                 cv2.putText(user_image, config_tip, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
-                self.point_['y'] += 20
+                self.point_['y'] += self.LINE_HEIGHT
 
                 self.tts_.say(config_tip)
         except Exception as e:
@@ -253,7 +261,7 @@ class TrainningModel :
                 text = 'kepp pose {} second'.format(reciporacal)
                 cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
                             (0, 0, 255), 2)
-                self.point_['y'] += 20
+                self.point_['y'] += self.LINE_HEIGHT
 
                 self.tts_.say(text)
 
@@ -275,7 +283,7 @@ class TrainningModel :
                 if math.fabs(error_angles[idx]) > ANGLE_ERROR_THRESHOLD :
                     point = angle_points[idx]['mid']
                     text = 'error:{}'.format(int(error_angles[idx]))
-                    cv2.putText(user_image, text, (point['x'], point['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                    cv2.putText(user_image, text, (int(point['x'] - 40), int(point['y'])), cv2.FONT_HERSHEY_PLAIN, 2.0,
                                 (0, 0, 255), 2)
                     self.tts_.say(text)
         except Exception as e :
@@ -287,7 +295,7 @@ class TrainningModel :
 
         return
 
-    def pointStaticsAngles(self, error_angles):
+    def pointStaticsAngles(self, error_angles, user_iamge):
 
         return
 

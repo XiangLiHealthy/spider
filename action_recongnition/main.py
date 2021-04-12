@@ -20,17 +20,21 @@ def putter(name, queue):
 
 
 if __name__ == '__main__':
-  queue = Queue()
-  getter_process = Process(target=getter, args=("Getter", queue))
-  putter_process = Process(target=putter, args=("Putter", queue))
-  getter_process.start()
-  putter_process.start()
-
-
-  print('------start------')
-
   try:
-    action_recong_engine.drawVideoThread()
+    # queue = Queue()
+    # getter_process = Process(target=getter, args=("Getter", queue))
+    # putter_process = Process(target=putter, args=("Putter", queue))
+    # getter_process.start()
+    # putter_process.start()
+    #
+    #
+    # print('------start------')
+    #
+    #
+    # action_recong_engine.drawVideoThread()
+
+    action_recong_engine.singleThread()
+
   except Exception as e:
     print (e)
 

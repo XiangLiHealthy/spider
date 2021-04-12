@@ -1,15 +1,25 @@
 {
   "train_task" : [
     {
-      "action_name" : "shen_zhan",
+      "action_name" : "shen_zhan.mp4",
       "frequency" : 1,
-      "count" : 20
+      "count" : 2
+    },
+    {
+      "action_name" : "ce_ping_ju.mp4",
+      "frequency" : 1,
+      "count" : 2
+    },
+    {
+      "action_name" : "ti_ce.mp4",
+      "frequency" : 1,
+      "count" : 2
     }
   ],
   "evaluation" : {
     "actions" : [
       {
-        "last_time" : "2021-04-08",
+        "last_date" : "2021-04-08",
         "cycle" : 7,
         "action_name" : "ce_ping_ju",
         "start_pose_angles" : [20, 30, 30, 40, 32, 43, 34, 34],

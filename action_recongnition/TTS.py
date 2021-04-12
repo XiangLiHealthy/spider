@@ -8,12 +8,12 @@ class TTS :
         self.engine_.setProperty('rate', 200)
 
     def say(self, text):
-        self.engine_.say(text)
+        #self.engine_.say(text)
 
         return
 
     def run(self):
-        self.engine_.runAndWait()
+        #self.engine_.runAndWait()
 
         return
 

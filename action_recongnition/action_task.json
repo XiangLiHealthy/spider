@@ -1,0 +1,38 @@
+{
+  "train_task" : [
+    {
+      "action_name" : "shen_zhan.mp4",
+      "last_time" : "2021-04-08 12:00:00",
+      "frequency" : 1,
+      "count" : 5
+    },
+    {
+      "action_name" : "ce_ping_ju.mp4",
+      "last_time" : "2021-04-08 12:00:00",
+      "frequency" : 1,
+      "count" : 5
+    },
+    {
+      "action_name" : "ti_ce.mp4",
+      "last_time" : "2021-04-08 12:00:00",
+      "frequency" : 1,
+      "count" : 5
+    }
+  ],
+  "evaluation" : [
+      {
+        "last_date" : "2021-04-08",
+        "target_ability" : 0.5 ,
+        "cycle" : 7,
+        "action_name" : "ce_ping_ju",
+        "video_path" : "ce_ping_ju.mp4",
+        "tips" : [
+          "1.please view teacher video",
+          "2.prepare evaluating like teacher pose",
+          "3.attemp to do better as same as teacher",
+          "4.keep 5sec",
+          "5.over"
+        ]
+      }
+    ]
+}

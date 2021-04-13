@@ -4,6 +4,18 @@ import time
 from datetime import date
 from action import Action
 from util import Util
+from EvaluationStateMachine import EvaluationState
+
+class EvaluationTask:
+    def __init__(self):
+        self.state = EvaluationState.INIT
+
+
+        self.keep_start_time = 0
+
+        self.j_config_ = {}
+
+        return
 
 class ConfigManager :
     def __init__(self):
@@ -156,6 +168,10 @@ class ConfigManager :
             print ('createAction error :{}'.format(e))
 
         return action
+
+    def getEvaluationTasks(self):
+
+        return
 
 g_config = ConfigManager()
 

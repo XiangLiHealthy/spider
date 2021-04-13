@@ -23,3 +23,7 @@ class VideoManager :
 
         return frame
 
+    def getFrameCount(self):
+
+        return
+

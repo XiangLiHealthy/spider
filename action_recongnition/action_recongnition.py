@@ -290,9 +290,10 @@ class ActionRecongnition:
 
                         # Flip the image horizontally for a later selfie-view display, and convert
                         # the BGR image to RGB.
-                        image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+                        #image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
                         # To improve performance, optionally mark the image as not writeable to
                         # pass by reference.
+                        image = cv2.flip(image, 1)
                         image.flags.writeable = False
 
                         # height, weight, depth = image.shape
@@ -306,7 +307,7 @@ class ActionRecongnition:
                             landmarks = MessageToDict(results.pose_landmarks)
 
                         #self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
-                        self.m_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                        self.m_image = image#cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
                         if None != landmarks :
                             landmark = landmarks['landmark']

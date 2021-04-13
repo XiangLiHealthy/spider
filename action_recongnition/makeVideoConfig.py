@@ -9,7 +9,7 @@ mp_pose = mp.solutions.pose
 import os
 import glob
 
-
+key_points = [16, 14, 12, 11, 13, 15, 23, 25, 27, 28, 26, 24]
 
 class VideoConfigMaker :
   def __init__(self):
@@ -23,18 +23,54 @@ class VideoConfigMaker :
 
     return file_list
 
+  def getAllImages(self, file):
+    cap = cv2.VideoCapture(file)
+    image = None
+    results = None
+
+    images = {}
+    while cap.isOpened():
+      frame_num = cap.get(1)
+      success, image = cap.read()
+      if not success:
+        print("Ignoring empty camera frame.")
+        cap.release()
+        break
+
+      image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+      # To improve performance, optionally mark the image as not writeable to
+      # pass by reference.
+      image.flags.writeable = False
+
+    return
+
+  def filterLandmarks(self, landmarks):
+      try:
+        for point in key_points :
+          if landmarks[point]['visibility'] < 0.9 :
+            return None
+
+        return landmarks
+      except Exception as e :
+        print (e)
+
+      return None
+
   def get_landmarks(self, file) :
 
     video_landmarks = []
     try:
       # For static images:
       with mp_pose.Pose(
-              min_detection_confidence=0.5,
-              min_tracking_confidence=0.5) as pose:
+              static_image_mode=False,
+              min_detection_confidence=0.1,
+              #min_tracking_confidence=0.5
+      ) as pose:
           cap = cv2.VideoCapture(file)
           image = None
           results = None
 
+          images = {}
           while cap.isOpened():
             frame_num = cap.get(1)
             success, image = cap.read()
@@ -43,10 +79,12 @@ class VideoConfigMaker :
               cap.release()
               break
 
-            image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+            #image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
             # To improve performance, optionally mark the image as not writeable to
             # pass by reference.
+            image = cv2.flip(image, 1)
             image.flags.writeable = False
+
             results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
             if not results.pose_landmarks:
@@ -62,10 +100,14 @@ class VideoConfigMaker :
             one_pose = {}
 
             landmarks = MessageToDict(results.pose_landmarks)
-            one_pose['landmarks'] = landmarks['landmark']
+            landmarks = self.filterLandmarks(landmarks['landmark'])
+            if None == landmarks :
+              continue
+
+            one_pose['landmarks'] = landmarks
             one_pose['frame_num'] = frame_num
             one_pose['keep_time'] = 0
-            one_pose['tips'] = ''
+            one_pose['tips'] = 'please heading forward'
             one_pose['time_pose_ms'] = cap.get(0)
 
             shape = {}

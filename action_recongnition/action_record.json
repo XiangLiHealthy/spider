@@ -3,17 +3,17 @@
     {
       "action_name" : "shen_zhan.mp4",
       "frequency" : 1,
-      "count" : 2
+      "count" : 5
     },
     {
       "action_name" : "ce_ping_ju.mp4",
       "frequency" : 1,
-      "count" : 2
+      "count" : 1
     },
     {
       "action_name" : "ti_ce.mp4",
       "frequency" : 1,
-      "count" : 2
+      "count" : 5
     }
   ],
   "evaluation" : {

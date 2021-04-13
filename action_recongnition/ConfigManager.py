@@ -133,6 +133,9 @@ class ConfigManager :
             action.video_path = './video/' + j_action['video_file']
 
             pose_angles = j_action['pose']
+            if len(pose_angles) < 1 :
+                return None
+
             for angle in pose_angles:
                 joint_angle = {}
                 joint_angle['keep_time'] = angle['keep_time']

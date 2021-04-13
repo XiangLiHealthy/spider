@@ -7,11 +7,13 @@ import time
 import math
 from action_counter import ActionCounter
 from TTS import TTS
+from TTS import runTTSProcess
 
 THRESHOLD = 300
-ANGLE_ERROR_THRESHOLD = 50
+ANGLE_ERROR_THRESHOLD = 10
 KEEP_FINISHED = 'finish'
 KEEP_DOING = 'doing'
+TIP_CONFIDENCE = 0.7
 
 class TrainningModel :
     def __init__(self):
@@ -34,6 +36,9 @@ class TrainningModel :
             self.LINE_HEIGHT = 25
             self.counter_ = ActionCounter()
             self.tts_ = TTS()
+            self.kept_time_ = 0
+
+            runTTSProcess(self.tts_)
         except Exception as e :
             print ('TrainningModel __init__ error:{}'.format(e))
         return
@@ -81,7 +86,7 @@ class TrainningModel :
             print('8.show teacher image')
             image = cv2.resize(self.teacher_frame_, (1280, 1440))
             cv2.imshow('teacher', image)
-            self.tts_.run()
+            #self.tts_.run()
         except Exception as e :
             print ('trainActions error:{}'.format(e))
 
@@ -145,7 +150,8 @@ class TrainningModel :
             # get action video frame by index
             frame_idx = self.m_current_action.m_teacher_pose[self.pose_idx_]['frame_num']
             if self.last_frame_idx != frame_idx :
-                self.teacher_frame_ = self.video_manager_.getFrameByIdx(frame_idx)
+                image = self.video_manager_.getFrameByIdx(frame_idx)
+                self.teacher_frame_ = cv2.flip(image, 1)
                 self.last_frame_idx = frame_idx
 
             print ('get video idx:{}'.format(frame_idx))
@@ -163,7 +169,7 @@ class TrainningModel :
             self.pointConfigTips(user_image)
 
             # 2. keep time
-            self.pointKeepTime(user_image)
+            self.pointKeepTime(error_angles, user_image)
 
             # 3. error angle tips
             self.pointErrorAngle(error_angles, user_landmarks, user_image)
@@ -172,8 +178,46 @@ class TrainningModel :
             self.pointSpeed(user_landmarks, user_image)
 
             self.pointStaticsAngles(error_angles, user_image)
+
+            self.pointUserPositions(user_landmarks, user_image)
+
         except Exception as e :
             print ('point error:{}'.format(e))
+
+        return
+
+    def pointUserPosition(self, point1, point2, user_image, text):
+        if point1['visibility'] < 0.7 and point2['visibility'] < 0.7 :
+            #text = 'please back off'
+            cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            self.point_['y'] += self.LINE_HEIGHT
+
+        return
+
+    def pointUserPositions(self, user_landmarks, user_image):
+        #self.pointUserPosition(user_landmarks[27], user_landmarks[28], user_image, "please back off")
+        if user_landmarks[27]['visibility'] < TIP_CONFIDENCE and user_landmarks[28]['visibility'] < TIP_CONFIDENCE :
+            text = 'please back off'
+            cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            self.point_['y'] += self.LINE_HEIGHT
+
+        #self.pointUserPosition(user_landmarks[16], user_landmarks[28], user_image, "please to the right")
+        if (user_landmarks[16]['visibility'] < TIP_CONFIDENCE and user_landmarks[15]['visibility'] > TIP_CONFIDENCE ) \
+                or (user_landmarks[28]['visibility'] < TIP_CONFIDENCE and user_landmarks[27]['visibility'] > TIP_CONFIDENCE):
+            text = 'please to the right'
+            cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            self.point_['y'] += self.LINE_HEIGHT
+
+        #self.pointUserPosition(user_landmarks[27], user_landmarks[15], user_image, "plese to the left")
+        if (user_landmarks[15]['visibility'] < TIP_CONFIDENCE and user_landmarks[16]['visibility'] > TIP_CONFIDENCE ) or \
+                (user_landmarks[27]['visibility'] < TIP_CONFIDENCE and user_landmarks[28]['visibility'] > TIP_CONFIDENCE):
+            text = 'please to the left'
+            cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            self.point_['y'] += self.LINE_HEIGHT
 
         return
 
@@ -242,7 +286,7 @@ class TrainningModel :
 
         return config_tip
 
-    def pointKeepTime(self, user_image):
+    def pointKeepTime(self, error_angles, user_image):
         try:
             # there must be not error ,it will keep time
             teacher_pose = self.m_current_action.m_teacher_pose[self.pose_idx_]
@@ -252,20 +296,24 @@ class TrainningModel :
                 self.keep_time_state_ = KEEP_DOING
                 self.keep_time_start_ = time.perf_counter()
 
+
+            if len(error_angles) > 0 :
+                self.keep_time_start_ = time.perf_counter() - self.kept_time_
+
             current_time = time.perf_counter()
-            kept_time = current_time - self.keep_time_start_
-            if kept_time > need_keep_time :
+            self.kept_time_ = current_time - self.keep_time_start_
+            if self.kept_time_ > need_keep_time :
                 self.keep_time_state_ = KEEP_FINISHED
             else:
-                reciporacal = need_keep_time - kept_time
-                text = 'kepp pose {} second'.format(reciporacal)
+                reciporacal = int(need_keep_time - self.kept_time_)
+                text = 'keep pose {} second'.format(reciporacal)
                 cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
                             (0, 0, 255), 2)
                 self.point_['y'] += self.LINE_HEIGHT
 
                 self.tts_.say(text)
 
-            print ('pose idx:{}, need keep:{}, kept time:{}'.format(self.pose_idx_, need_keep_time, kept_time))
+            print ('pose idx:{}, need keep:{}, kept time:{}'.format(self.pose_idx_, need_keep_time, self.kept_time_))
         except Exception as e :
             print ('pointKeepTime error:{}'.format(e))
 
@@ -285,7 +333,7 @@ class TrainningModel :
                     text = 'error:{}'.format(int(error_angles[idx]))
                     cv2.putText(user_image, text, (int(point['x'] - 40), int(point['y'])), cv2.FONT_HERSHEY_PLAIN, 2.0,
                                 (0, 0, 255), 2)
-                    self.tts_.say(text)
+                    #self.tts_.say(text)
         except Exception as e :
             print ('pointErrorAngle error:{}'.format(e))
 

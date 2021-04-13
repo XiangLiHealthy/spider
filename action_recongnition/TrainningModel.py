@@ -9,7 +9,7 @@ from action_counter import ActionCounter
 from TTS import TTS
 from TTS import runTTSProcess
 
-THRESHOLD = 300
+
 ANGLE_ERROR_THRESHOLD = 10
 KEEP_FINISHED = 'finish'
 KEEP_DOING = 'doing'
@@ -72,7 +72,7 @@ class TrainningModel :
             self.teach()
 
             print('4.recong')
-            error_angles = self.recong(user_landmarks, user_image)
+            error_angles = Util.calculateAngleDiff(user_landmarks, user_image, self.m_current_action.m_teacher_pose[self.pose_idx_]['landmarks'], self.teacher_frame_)
 
             print('5.point')
             self.point(error_angles, user_landmarks, user_image)
@@ -115,27 +115,6 @@ class TrainningModel :
 
         return
 
-    def recong(self, user_landmarks, user_image):
-        try:
-            error_angles = []
-
-            # match current teacher pose with user pose
-            user_angles = Util.translateLandmarks(user_landmarks, user_image.shape, user_image)
-            teacher_angles = Util.translateLandmarks(self.m_current_action.m_teacher_pose[self.pose_idx_]['landmarks'], self.teacher_frame_.shape, self.teacher_frame_)
-            diff = Util.caculatePoseDifference(user_angles, teacher_angles)
-            if diff > THRESHOLD :
-                for idx in range(0, len(user_angles)) :
-                    error_angle = user_angles[idx] - teacher_angles[idx]
-                    error_angles.append(error_angle)
-
-            print('user_angles:{}'.format(user_angles))
-            print('teacher_angles:{}'.format(teacher_angles))
-            print('diff:{},diff angles:{}'.format(diff, error_angles))
-        except Exception as e :
-            print ('recong error :{}'.format(e))
-
-        return error_angles
-
     def teach(self):
         try:
             teach_state = g_config.getTeachState()
@@ -172,7 +151,7 @@ class TrainningModel :
             self.pointKeepTime(error_angles, user_image)
 
             # 3. error angle tips
-            self.pointErrorAngle(error_angles, user_landmarks, user_image)
+            Util.pointErrorAngle(error_angles, user_landmarks, user_image)
 
             # 4. error speed tips
             self.pointSpeed(user_landmarks, user_image)
@@ -183,15 +162,6 @@ class TrainningModel :
 
         except Exception as e :
             print ('point error:{}'.format(e))
-
-        return
-
-    def pointUserPosition(self, point1, point2, user_image, text):
-        if point1['visibility'] < 0.7 and point2['visibility'] < 0.7 :
-            #text = 'please back off'
-            cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
-                        (0, 0, 255), 2)
-            self.point_['y'] += self.LINE_HEIGHT
 
         return
 
@@ -316,26 +286,6 @@ class TrainningModel :
             print ('pose idx:{}, need keep:{}, kept time:{}'.format(self.pose_idx_, need_keep_time, self.kept_time_))
         except Exception as e :
             print ('pointKeepTime error:{}'.format(e))
-
-        return
-
-    def pointErrorAngle(self, error_angles, user_landmarks, user_image):
-        try:
-            print ('error angles:{}, threshold : {}'.format(error_angles, THRESHOLD))
-
-            if len(error_angles) == 0 :
-                return
-
-            angle_points = Util.getAllAnglePoints(user_landmarks, user_image.shape)
-            for idx in range(0, len(angle_points)) :
-                if math.fabs(error_angles[idx]) > ANGLE_ERROR_THRESHOLD :
-                    point = angle_points[idx]['mid']
-                    text = 'error:{}'.format(int(error_angles[idx]))
-                    cv2.putText(user_image, text, (int(point['x'] - 40), int(point['y'])), cv2.FONT_HERSHEY_PLAIN, 2.0,
-                                (0, 0, 255), 2)
-                    #self.tts_.say(text)
-        except Exception as e :
-            print ('pointErrorAngle error:{}'.format(e))
 
         return
 

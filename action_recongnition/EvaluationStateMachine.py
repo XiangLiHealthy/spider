@@ -50,7 +50,7 @@ class Prepare :
         self.drawTeacherTips()
 
         # 3. recong user pose
-        
+
         # 4. error tips
 
         return

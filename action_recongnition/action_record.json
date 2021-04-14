@@ -1,29 +1,31 @@
 [
   "train", [
     {
-        "type" : "train",
-        "action_name" : "shen_zhan",
-        "data" : {
-          "count" : 20,
-          "datetime" : "2021-04-08 12:00:00",
-          "score" : {
-            "angle" : 80,
-            "speed" : 70,
-            "keep_time" : 60,
-            "total" : 75
-            }
+      "type" : "train",
+      "action_name" : "shen_zhan",
+      "data" : {
+        "count" : 20,
+        "datetime" : "2021-04-08 12:00:00",
+        "score" : {
+          "angle" : 80,
+          "speed" : 70,
+          "keep_time" : 60,
+          "total" : 75
           }
+        }
     }
   ],
   "evaluation", [
     {
-        "type" : "evaluation",
-        "name" : "ce_ping_ju",
-        "landmarks" : {},
-        "score" : 80,
-        "picture" : "./video/ce_ping_ju-20210412.jpg",
-        "datetime" : "2021-04-13 16:32:00",
-        "report" : "./video/ce_ping_ju-20210412.pdf"
+      "type" : "evaluation",
+      "name" : "ce_ping_ju",
+      "user_angles" : [80, 80, 180, 40, 30, 40, 60, 70],
+      "teacher_angles" : [80, 80, 180, 40, 30, 40, 60, 70],
+      "score" : 80,
+      "picture" : "./video/ce_ping_ju-20210412.jpg",
+      "datetime" : "2021-04-13 16:32:00",
+      "report" : "./video/ce_ping_ju-20210412.pdf",
+      "need_parts" : ["right_sholder", "left_shoulder" ]
     }
   ]
 ]

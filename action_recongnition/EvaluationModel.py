@@ -7,7 +7,8 @@ from EvaluationStateMachine import Prepare
 from EvaluationStateMachine import Teaching
 from EvaluationStateMachine import Evaluating
 from EvaluationStateMachine import Keeping
-from EvaluationStateMachine import Completing
+from EvaluationStateMachine import CreateReport
+from EvaluationStateMachine import NextAction
 
 import cv2
 from VideoManager import VideoManager
@@ -24,11 +25,13 @@ class EvaluationModel :
             EvaluationState.PREPARE : Prepare(self),
             EvaluationState.EVALUATING : Evaluating(self),
             EvaluationState.KEEP_POSE : Keeping(self),
-            EvaluationState.COMPLETE : Completing(self)
+            EvaluationState.NEXT : NextAction(self),
+            EvaluationState.CREATE_REPORT : CreateReport(self)
         }
         self.evaluation_image_ = None
         self.video_manager_ = VideoManager()
         self.teacher_action_ = Action()
+        self.evaluation_result_ = []
 
         return
 
@@ -47,9 +50,11 @@ class EvaluationModel :
 
         return self.state_
 
-    def changeTask(self, state):
-        if EvaluationState.COMPLETE == state and self.task_idx_ < len(self.tasks_):
-            self.task_idx_ += 1
+    def createEvaluationReport(self):
+
+        return
+
+    def release(self):
 
         return
 
@@ -64,8 +69,9 @@ class EvaluationModel :
         # 2.perform by task state
         self.state_ = self.callbacks_[self.state_].perform(user_landmarks, user_image)
 
-        # 3.change action if complete
-        self.changeTask(self.state_)
+        # 4.create evaluation report
+        if EvaluationState.COMPLETE == self.state_ :
+            self.release()
 
         cv2.imshow('evaluation', self.evaluation_image_)
 

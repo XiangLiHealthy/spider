@@ -14,6 +14,14 @@ class EvaluationTask:
         self.keep_start_time = 0
 
         self.j_config_ = {}
+        self.evaluation_landmark_ = {}
+        self.evaluation_angles = []
+        self.teacher_pose_idx_ = 0
+        self.evaluation_image_ = None
+        self.scores_ = []
+        self.sychronize_scroe_ = 0.0
+        self.teacher_image_ = None
+        self.teacher_landmarks_ = {}
 
         return
 
@@ -169,6 +177,18 @@ class ConfigManager :
         return action
 
     def getEvaluationTasks(self):
+
+        return
+
+    def get_report_path(self):
+
+        return './report'
+
+    def get_evaluation_records(self, name):
+
+        return
+
+    def get_idx_by_part(self, part):
 
         return
 

@@ -27,3 +27,5 @@ class VideoManager :
 
         return
 
+    def release(self):
+        self.cap_.release()

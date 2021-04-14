@@ -3,6 +3,8 @@ import cv2
 from EvaluationModel import EvaluationModel
 from enum import Enum
 from ConfigManager import g_config
+from util import Util
+import time
 
 class EvaluationState(Enum) :
 
@@ -12,48 +14,6 @@ class EvaluationState(Enum) :
     EVALUATING = 2
     KEEP_POSE = 3
     COMPLETE = 4
-
-class Prepare :
-    def __init__(self, context):
-        self.teacher_landmarks_ = {}
-        self.teacher_image_ = None
-        self.context_ = EvaluationModel() #context
-        self.pose_idx_ = 0
-
-        return
-
-    def setTeacherPose(self):
-        # 1. get first pose landmarks and image
-        pose = self.context_.teacher_action_.m_teacher_pose[self.pose_idx_]
-        self.teacher_landmarks_ = pose['landmarks']
-
-        # 2.
-        idx = pose['frame_num']
-        self.teacher_image_ = self.context_.video_manager_.getFrameByIdx(idx)
-
-        return
-
-    def drawTeacherTips(self):
-        tips = self.context_.teacher_action_.m_teacher_pose[self.pose_idx_]['tips']
-
-        point = (40, 40)
-        cv2.putText(self.context_.evaluation_image_, tips, point, cv2.FONT_HERSHEY_PLAIN, 2.0,
-                    (0, 0, 255), 2)
-
-        return
-
-    def perform(self, user_landmarks, user_image):
-        # 1.set teacher pose
-        self.setTeacherPose()
-
-        # 2. show teacher tips
-        self.drawTeacherTips()
-
-        # 3. recong user pose
-
-        # 4. error tips
-
-        return
 
 class Teaching :
     def __init__(self, context):
@@ -105,23 +65,120 @@ class Teaching :
 
         return state
 
-class Evaluating :
+class Prepare :
     def __init__(self, context):
+        self.teacher_landmarks_ = {}
+        self.teacher_image_ = None
+        self.context_ = EvaluationModel() #context
+        self.pose_idx_ = 0
+
+        return
+
+    def setTeacherPose(self):
+        # 1. get first pose landmarks and image
+        pose = self.context_.teacher_action_.m_teacher_pose[self.pose_idx_]
+        self.teacher_landmarks_ = pose['landmarks']
+
+        # 2.
+        idx = pose['frame_num']
+        self.teacher_image_ = self.context_.video_manager_.getFrameByIdx(idx)
+
+        return
+
+    def drawTeacherTips(self):
+        tips = self.context_.teacher_action_.m_teacher_pose[self.pose_idx_]['tips']
+
+        point = (40, 40)
+        cv2.putText(self.context_.evaluation_image_, tips, point, cv2.FONT_HERSHEY_PLAIN, 2.0,
+                    (0, 0, 255), 2)
 
         return
 
     def perform(self, user_landmarks, user_image):
+        # 1.set teacher pose
+        self.setTeacherPose()
+
+        # 2. show teacher tips
+        self.drawTeacherTips()
+
+        # 3. recong user pose
+        error_angles = Util.calculateAngleDiff(user_landmarks, user_image, self.teacher_landmarks_, self.teacher_image_)
+
+        # 4. error tips
+        Util.pointErrorAngle(error_angles, user_landmarks, user_image)
+
+        # 5. change state
+        state = EvaluationState.PREPARE
+        if 0 == len(error_angles) :
+            state = EvaluationState.EVALUATING
+
+        return state
+
+
+
+class Evaluating(Prepare) :
+    def __init__(self, context):
+        super().__init__()
 
         return
+
+    def initPoseIdx(self):
+        # 1.get evaluation position
+        position = super().context_.current_task_.j_config_['target_ability']
+
+        # 2. get teacher pose num
+        pose_num = len(super().context_.teacher_action_.m_teacher_pose)
+
+        # 3. calculate pose idx
+        super().pose_idx_ = pose_num * position
+
+        return
+
+    def perform(self, user_landmarks, user_image):
+        # 1.init pose idx
+        self.initPoseIdx()
+
+        # 2.set teacher pose
+        super().setTeacherPose()
+
+        # 3. show teaacher tips
+        super().drawTeacherTips()
+
+        # 4. change state
+        return EvaluationState.KEEP_POSE
+
 
 class Keeping :
     def __init__(self, context):
+        self.keep_time_start_ = 0
+        self.last_user_pose = []
+
+        self.KEEP_START = 1
+        self.KEEP_OVER = 5
 
         return
 
     def perform(self, user_landmarks, user_image):
+        state = EvaluationState.KEEP_POSE
+        if len(self.last_user_pose) == 0 :
+            self.last_user_pose = user_landmarks
+            return state
 
-        return
+        error_angles = Util.calculateAngleDiff(user_landmarks, user_image, self.last_user_pose, user_landmarks)
+
+        if len(error_angles) > 0 :
+            self.keep_time_start_ = time.perf_counter()
+            return state
+
+        diff = time.perf_counter() - self.keep_time_start_
+        if diff  < self.KEEP_START :
+            return state
+
+        if diff < self.KEEP_OVER :
+            
+            return state
+
+        return EvaluationState.COMPLETE
 
 class Completing :
     def __init__(self, context):

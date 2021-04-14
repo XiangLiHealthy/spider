@@ -9,6 +9,9 @@ import cv2
 import numpy as np
 from numpy import unicode
 
+ANGLE_ERROR_THRESHOLD = 10
+THRESHOLD = 300
+
 angle_points_config = [
     [28, 26, 24],#right knee
     [26, 24, 12],#right hip
@@ -283,6 +286,47 @@ class Util:
             end_y = int(end['y'] * y_scale)
 
             cv2.line(m_context, (start_x, start_y), (end_x, end_y), (255, 0, 0), 15)
+
+        return
+
+    def calculateAngleDiff(self, user_landmarks, user_image, teacher_landmarks, teacher_image):
+        try:
+            error_angles = []
+
+            # match current teacher pose with user pose
+            user_angles = Util.translateLandmarks(user_landmarks, user_image.shape, user_image)
+            teacher_angles = Util.translateLandmarks(teacher_landmarks, teacher_image.shape, teacher_image)
+            diff = Util.caculatePoseDifference(user_angles, teacher_angles)
+            if diff > THRESHOLD :
+                for idx in range(0, len(user_angles)) :
+                    error_angle = user_angles[idx] - teacher_angles[idx]
+                    error_angles.append(error_angle)
+
+            print('user_angles:{}'.format(user_angles))
+            print('teacher_angles:{}'.format(teacher_angles))
+            print('diff:{},diff angles:{}'.format(diff, error_angles))
+        except Exception as e :
+            print ('recong error :{}'.format(e))
+
+        return error_angles
+
+    def pointErrorAngle(self, error_angles, user_landmarks, user_image):
+        try:
+            print ('error angles:{}, threshold : {}'.format(error_angles, THRESHOLD))
+
+            if len(error_angles) == 0 :
+                return
+
+            angle_points = Util.getAllAnglePoints(user_landmarks, user_image.shape)
+            for idx in range(0, len(angle_points)) :
+                if math.fabs(error_angles[idx]) > ANGLE_ERROR_THRESHOLD :
+                    point = angle_points[idx]['mid']
+                    text = 'error:{}'.format(int(error_angles[idx]))
+                    cv2.putText(user_image, text, (int(point['x'] - 40), int(point['y'])), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                                (0, 0, 255), 2)
+                    #self.tts_.say(text)
+        except Exception as e :
+            print ('pointErrorAngle error:{}'.format(e))
 
         return
 

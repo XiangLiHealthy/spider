@@ -141,7 +141,6 @@ class ConfigManager :
             action.m_en_name = j_action['en_name']
             action.m_action_time = j_action['action_time']
 
-
             action.video_path = './video/' + j_action['video_file']
 
             pose_angles = j_action['pose']

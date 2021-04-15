@@ -8,7 +8,7 @@ import math
 from action_counter import ActionCounter
 from TTS import TTS
 from TTS import runTTSProcess
-
+import math
 
 ANGLE_ERROR_THRESHOLD = 10
 KEEP_FINISHED = 'finish'
@@ -191,6 +191,31 @@ class TrainningModel :
 
         return
 
+    def get_next_idx(self):
+        # get all anggle range for current task
+        # test next pose weather ok, or next
+
+        task = g_config.get_task_by_name(self.m_current_action.m_name)
+        next_idx = self.pose_idx_
+        for next_idx in range(self.pose_idx_ + 1, len(self.m_current_action.m_teacher_pose)) :
+            for angle_range in task['angle_range'] :
+                pose_angles = self.m_current_action.m_pose_angles[next_idx]
+                angle_idx = Util.get_idx_by_part(angle_range['part'])
+                angle = pose_angles[angle_idx]
+                if angle_range['start_angle']  < angle_range['end_angle'] :
+                    if angle > angle_range['end_angle']  :
+                        continue
+                else :
+                    if angle < angle_range['end_angle'] :
+                        continue
+
+        if next_idx == len(self.m_current_action.m_pose_angles):
+            self.count += 1
+            self.counter_.addAction(self.m_current_action.m_name)
+            self.pose_idx_ = 0
+
+        return next_idx
+
     def counting(self, error_angles, user_image):
         try:
             next_idx = 0
@@ -199,7 +224,7 @@ class TrainningModel :
             if len(error_angles) > 0 :
                 if KEEP_DOING == self.keep_time_state_ :
                     if g_config.TEACH_FINISH == g_config.getTeachState() :
-                        next_idx = self.pose_idx_ + 1
+                        next_idx = self.get_next_idx()
                     else:
                         next_idx = self.pose_idx_
                 else:
@@ -208,7 +233,7 @@ class TrainningModel :
                 if KEEP_DOING == self.keep_time_state_ :
                     next_idx = self.pose_idx_
                 else :
-                    next_idx = self.pose_idx_ + 1
+                    next_idx = self.get_next_idx()
 
             print ('error angles count:{}, keep state:{}, teach state:{}, next_idx:{}, pose count:{}'.format(len(error_angles),
                  self.keep_time_state_, g_config.getTeachState(), next_idx, len(self.m_current_action.m_pose_angles)))
@@ -217,12 +242,7 @@ class TrainningModel :
                 self.keep_time_state_ = KEEP_FINISHED
                 # record actual keep time
 
-            if next_idx == len(self.m_current_action.m_pose_angles) :
-                self.count += 1
-                self.counter_.addAction(self.m_current_action.m_name)
-                self.pose_idx_ = 0
-            else :
-                self.pose_idx_ = next_idx
+            self.pose_idx_ = next_idx
 
             text = '{},count:{}'.format(self.m_current_action.m_en_name, self.count)
             cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,

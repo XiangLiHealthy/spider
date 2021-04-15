@@ -11,6 +11,7 @@ from recong_result import RecongResult
 from ConfigManager import g_config
 from EvaluationModel import EvaluationModel
 from TrainningModel import TrainningModel
+from task_adjustment import g_adjustment
 
 class ActionRecongnition:
     def __init__(self, queue, recong_queue):
@@ -246,7 +247,7 @@ class ActionRecongnition:
 
                 self.m_image = cv2.cvtColor(self.m_image, cv2.COLOR_RGB2BGR)
 
-                #self.evaluate(results, self.m_image)
+                self.evaluate(results, self.m_image)
                 self.train(results, self.m_image)
                 #self.freeStyleRecong(results, self.m_image)
 

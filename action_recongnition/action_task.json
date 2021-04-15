@@ -2,9 +2,19 @@
   "train_task" : [
     {
       "action_name" : "shen_zhan.mp4",
+      "evaluation_name" : "ce_ping_ju",
       "last_time" : "2021-04-08 12:00:00",
       "frequency" : 1,
-      "count" : 5
+      "count" : 5,
+      "cycle" : 7,
+      "angle_range" : [
+        {
+          "name" : "right_shoulder",
+          "min" : 0,
+          "max" : 80
+        }
+      ],
+      "focus_parts" : ["left_shoulder"]
     },
     {
       "action_name" : "ce_ping_ju.mp4",
@@ -25,6 +35,8 @@
         "target_ability" : 0.5 ,
         "cycle" : 7,
         "action_name" : "ce_ping_ju",
+        "focus_part": ["right_shoulder", "left_shoulder"],
+        "adjust_actions" : ["ce_ping_ju", "ti_ce"],
         "video_path" : "ce_ping_ju.mp4",
         "tips" : [
           "1.please view teacher video",
@@ -32,7 +44,48 @@
           "3.attemp to do better as same as teacher",
           "4.keep 5sec",
           "5.over"
-        ]
+        ],
+        "results" : [
+          {
+            "angle_range" : [
+              {
+                "name" : "right_shoulder",
+                "start_angle" : 0,
+                "end_angle" : 80
+              },
+              {
+                "name" : "left_shoulder",
+                "start_angle" : 0,
+                "end_angle" : 80
+              }
+            ],
+            "data_time" : "2021-04-23"
+          }
+        ] 
+      }
+    ] ,
+    
+  "adjust_task_rule" : {
+    "mode" : "auto",
+    "actions" : [
+      {
+        "name" : "ce_ping_ju",
+        "frequency" : 1,
+        "count" : 5,
+        "keep_day" : 7,
+        "angle_change_unit" : 10,
+        "focus_parts" : ["right_shoulder"],
+        "next_actions" : ["ti_ce", "shen_zhan"]
+      },
+     {
+        "name" :  "ti_ce",
+        "frequency" : 1,
+        "count" : 5,
+        "interval" : 7,
+        "angle_change_unit" : 5,
+        "focus_parts" : ["right_shoulder"],
+        "next_actions" : ["pa_qiang"]
       }
     ]
+  }
 }

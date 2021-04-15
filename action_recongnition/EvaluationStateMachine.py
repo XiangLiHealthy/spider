@@ -13,6 +13,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_diabetes
 import seaborn as sns
+from task_adjustment import g_adjustment
+
 class EvaluationState(Enum):
     INIT = 0
     TEACHING = -1
@@ -224,7 +226,7 @@ class NextAction:
             score = user_ability / teacher_ability * 100
             scores.append(score)
 
-        self.context_.current_task_.scores_ = self.score()
+        self.context_.current_task_.scores_ = scores
 
         total_score = 0.0
         for score in scores:
@@ -303,10 +305,28 @@ class CreateReport:
 
         return paragraphs
 
-    def dispatch_train_task(self):
+    def save_evaluation_results(self):
+        # get all tasks
+        # change evaluation into config
+        #
+        return
+
+    def adjust_train_task(self):
+        self.save_evaluation_results()
+
         head1 = Paragraph('根据评估结果的下期训练任务与目标')
         paragraphs = []
         paragraphs.append(head1)
+
+        tasks = g_adjustment.perform()
+        idx = 0
+        for task in tasks :
+            idx += 1
+            text = '{}.{},count/day, {} day'.format(task['action_name'], task['count'], task['cycle'])
+            paragraphs.append(text)
+            for angle_range in task['angle_range'] :
+                range = '  {} : ({}, {})'.format(angle_range['name'], angle_range['min'], angle_range['max'])
+                paragraphs.append(range)
 
         return paragraphs
 
@@ -372,7 +392,7 @@ class CreateReport:
     def perform(self, user_landmarks, user_image):
         paragraphs = self.add_evaluation_result()
 
-        paragraphs += self.dispatch_train_task()
+        paragraphs += self.adjust_train_task()
 
         paragraphs += self.statistical_analysis()
 

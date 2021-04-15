@@ -5,6 +5,7 @@ from datetime import date
 from action import Action
 from util import Util
 from EvaluationStateMachine import EvaluationState
+from util import angles_idx
 
 class EvaluationTask:
     def __init__(self):
@@ -40,6 +41,7 @@ class ConfigManager :
             self.record_file_  = './action_record.json'
             self.model_config_ = ''
             self.record_config_ = ''
+            self.task_config_ = None
 
             self.loadRecord()
             self.loadActionModel()
@@ -177,20 +179,33 @@ class ConfigManager :
         return action
 
     def getEvaluationTasks(self):
+        tasks = self.task_config_['evaluation']
 
-        return
+        return tasks
 
     def get_report_path(self):
 
         return './report'
 
     def get_evaluation_records(self, name):
+        for evaluation in self.task_config_['evaluation'] :
+            if name == evaluation['action_name'] :
+                results = evaluation['results']
+                return results
+
+        return None
+
+    def get_idx_by_part(self, name):
+        return angles_idx[name]
+
+    def save_task(self, tasks):
+        self.task_config_['train_task'] = tasks
 
         return
 
-    def get_idx_by_part(self, part):
+    def get_task_config(self):
 
-        return
+        return self.task_config_
 
 g_config = ConfigManager()
 

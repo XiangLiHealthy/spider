@@ -192,27 +192,28 @@ class TrainningModel :
         return
 
     def get_next_idx(self):
+        next_idx = 0
+        try:
         # get all anggle range for current task
         # test next pose weather ok, or next
+            for next_idx in range(self.pose_idx_ + 1, len(self.m_current_action.m_teacher_pose)) :
+                for angle_range in self.m_current_action.angles_range :
+                    pose_angles = self.m_current_action.m_pose_angles[next_idx]
+                    angle_idx = Util.get_idx_by_part(angle_range['part'])
+                    angle = pose_angles[angle_idx]
+                    if angle_range['start_angle']  < angle_range['end_angle'] :
+                        if angle <= angle_range['end_angle']  :
+                            break
+                    else :
+                        if angle > angle_range['end_angle'] :
+                            break
 
-        task = g_config.get_task_by_name(self.m_current_action.m_name)
-        next_idx = self.pose_idx_
-        for next_idx in range(self.pose_idx_ + 1, len(self.m_current_action.m_teacher_pose)) :
-            for angle_range in task['angle_range'] :
-                pose_angles = self.m_current_action.m_pose_angles[next_idx]
-                angle_idx = Util.get_idx_by_part(angle_range['part'])
-                angle = pose_angles[angle_idx]
-                if angle_range['start_angle']  < angle_range['end_angle'] :
-                    if angle > angle_range['end_angle']  :
-                        continue
-                else :
-                    if angle < angle_range['end_angle'] :
-                        continue
-
-        if next_idx == len(self.m_current_action.m_pose_angles):
-            self.count += 1
-            self.counter_.addAction(self.m_current_action.m_name)
-            self.pose_idx_ = 0
+            if next_idx == len(self.m_current_action.m_teacher_pose):
+                self.count += 1
+                self.counter_.addAction(self.m_current_action.m_name)
+                self.pose_idx_ = 0
+        except Exception as e :
+            print ('train get_next_idx except:{}'.format(e))
 
         return next_idx
 

@@ -11,6 +11,7 @@ class Action:
         self.m_current_pose_idx = 0
         self.m_en_name = ''
         self.video_path = ''
+        self.angles_range = {}
 
     def match(self, angles):
 

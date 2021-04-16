@@ -5,20 +5,24 @@ class TaskAdjustment :
 
         return
 
-    def get_last_tasks(self, name):
-        config = g_config.get_task_config()
-        actions = []
-        for action in config['action_name'] :
-            if name == action['action_name'] :
-                actions.append(action)
+    def get_last_evaluations(self, evaluation):
+        size = len(evaluation['results'])
+        if size == 0 :
+            return None
 
-        return actions
+        result = evaluation['results'][size - 1]
+        if result['adjust_flag'] == "not_adjust" :
+            return None
 
-    def get_next_actions(self, name):
+        result['adjust_flag'] = 'adjusted'
+
+        return result
+
+    def get_rule(self, name):
         task_config = g_config.get_task_config()
-        for action in task_config['adjust_task_rule']['actions'] :
-            if action['name'] == name:
-                return action
+        for rule in task_config['adjust_task_rule']['actions'] :
+            if rule['name'] == name:
+                return rule
 
         return None
 
@@ -30,7 +34,7 @@ class TaskAdjustment :
 
         return None
 
-    def create_one_task(self, rule, evaluation):
+    def create_one_task(self, rule):
         action = {}
         action['action_name'] = rule['action_name']
         action['frequency'] = rule['frequency']
@@ -43,43 +47,32 @@ class TaskAdjustment :
 
     def create_task(self):
         # get evaluation result
-        evaluation_result = g_config.get_evaluation_records(None)
-        last_tasks = []
-        for evaluation in evaluation_result :
-            last_tasks += self.get_last_tasks(evaluation['name'])
-
-        # get all next actions
-        next_actions = []
-        for last_task in last_tasks :
-            next_actions += self.get_next_actions(last_task['action_name'])
-
-        if len(next_actions) == 0 :
-            for evaluation in evaluation_result :
-                next_actions += evaluation['next_acitons']
-
-        # create task
         actions = []
-        for name in next_actions :
-            rule = self.get_next_actions(name)
-            if None == rule :
+        evaluation_result = g_config.get_evaluation_records(None)
+        last_evaluations = []
+        for evaluation in evaluation_result :
+            tmp = self.get_last_evaluations(evaluation)
+            if None == tmp :
                 continue
 
-            action = self.create_one_task(rule)
-            action = self.adjust_angle(action, rule)
-            if None == action :
-                continue
+            next_actions = evaluation['adjust_actions']
+            for name in next_actions:
+                rule = self.get_rule(name)
+                if None == rule:
+                    continue
 
-            actions.append(action)
+                action = self.create_one_task(rule)
+                action = self.adjust_angle(action, rule, evaluation)
+                if None == action:
+                    continue
+
+                actions.append(action)
 
         return actions
 
-    def adjust_angle(self, action, rule):
-        evaluation_result = self.get_evaluation_result(action['name'])
-        if None == evaluation_result :
-            return None
-
+    def adjust_angle(self, action, rule, evaluation):
         angle_ranges = []
-        for part in evaluation_result['angle_range'] :
+        for part in evaluation['angle_range'] :
             angle_range = part
 
             if angle_range['start_angle'] <= angle_range['end_angle'] :
@@ -103,7 +96,7 @@ class TaskAdjustment :
         tasks = self.create_task()
 
         #  adjust part angle
-        self.adjust_angle(tasks)
+        #self.adjust_angle(tasks)
 
         # save config
         g_config.save_task(tasks)

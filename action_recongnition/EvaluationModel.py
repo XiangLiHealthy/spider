@@ -1,6 +1,4 @@
-
-from ConfigManager import EvaluationTask
-from ConfigManager import EvaluationState
+from evaluation_state import EvaluationState
 from ConfigManager import g_config
 
 from EvaluationStateMachine import Prepare
@@ -13,40 +11,49 @@ from EvaluationStateMachine import NextAction
 import cv2
 from VideoManager import VideoManager
 from action import Action
+from datetime import date
+
 
 class EvaluationModel :
     def __init__(self):
-        self.tasks_ = []
-        self.tast_idx_ = 0
-        self.current_task_ = EvaluationTask()
-        self.state_ = EvaluationState.INIT
-        self.callbacks_ = {
-            EvaluationState.TEACHING : Teaching(self),
-            EvaluationState.PREPARE : Prepare(self),
-            EvaluationState.EVALUATING : Evaluating(self),
-            EvaluationState.KEEP_POSE : Keeping(self),
-            EvaluationState.NEXT : NextAction(self),
-            EvaluationState.CREATE_REPORT : CreateReport(self)
-        }
-        self.evaluation_image_ = None
-        self.video_manager_ = VideoManager()
-        self.teacher_action_ = Action()
-        self.evaluation_result_ = []
+        try:
+            self.tasks_ = []
+            self.tast_idx_ = 0
+            self.current_task_ = None
+            self.state_ = EvaluationState.INIT
+            self.callbacks_ = {
+                EvaluationState.TEACHING : Teaching(self),
+                EvaluationState.PREPARE : Prepare(self),
+                EvaluationState.EVALUATING : Evaluating(self),
+                EvaluationState.KEEP_POSE : Keeping(self),
+                EvaluationState.NEXT : NextAction(self),
+                EvaluationState.CREATE_REPORT : CreateReport(self)
+            }
+            self.evaluation_image_ = None
+            self.video_manager_ = VideoManager()
+            self.teacher_action_ = Action()
+            self.evaluation_result_ = []
+        except Exception as e:
+            print ('EvaluationModel except:{}'.format(e))
 
         return
 
     def initTask(self):
-        if len(self.tasks_) == 0 :
-            # 1. get evaluation tasks
-            self.tasks_ = g_config.getEvaluationTasks()
+        try:
             if len(self.tasks_) == 0 :
-                self.state_ = EvaluationState.COMPLETE
-                return
-            self.task_idx_ = 0
-            self.state_ = EvaluationState.TEACHING
-            self.current_task_ = self.tasks_[self.task_idx_]
+                # 1. get evaluation tasks
+                self.tasks_ = g_config.getEvaluationTasks()
+                if len(self.tasks_) == 0 :
+                    self.state_ = EvaluationState.COMPLETE
+                    return
 
-            self.teacher_action_ = g_config.getTeacherActions(self.current_task_.j_config_['action_name'])
+                self.task_idx_ = 0
+                self.state_ = EvaluationState.TEACHING
+                self.current_task_ = self.tasks_[self.task_idx_]
+
+                self.teacher_action_ = g_config.getTeacherActions(self.current_task_.j_config_['action_name'])
+        except Exception as e :
+            print ('initTask exception :{}'.format(e))
 
         return self.state_
 
@@ -55,26 +62,34 @@ class EvaluationModel :
         return
 
     def release(self):
+        self.video_manager_.release()
+        self.teacher_action_ = None
+        self.tasks_.clear()
+        self.current_task_ = None
+        self.evaluation_result_ = None
 
         return
 
     def perform(self, user_landmarks, user_image):
-        if EvaluationState.COMPLETE == self.state_ :
-            return
+        try:
+            if EvaluationState.COMPLETE == self.state_ :
+                return
 
-        # set current task
-        if self.initTask() == EvaluationState.COMPLETE :
-            return
+            # set current task
+            if self.initTask() == EvaluationState.COMPLETE :
+                return
 
-        # 2.perform by task state
-        self.state_ = self.callbacks_[self.state_].perform(user_landmarks, user_image)
+            # 2.perform by task state
+            self.state_ = self.callbacks_[self.state_].perform(user_landmarks, user_image)
 
-        # 4.create evaluation report
-        if EvaluationState.COMPLETE == self.state_ :
-            self.release()
+            # 4.create evaluation report
+            if EvaluationState.COMPLETE == self.state_ :
+                self.release()
 
-        cv2.imshow('evaluation', self.evaluation_image_)
+            cv2.imshow('evaluation', self.evaluation_image_)
+        except Exception as e :
+            print ('perform evaluate failed'.format(e))
 
-        return
+        return self.state_
 
 

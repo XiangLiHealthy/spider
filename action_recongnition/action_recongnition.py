@@ -12,6 +12,7 @@ from ConfigManager import g_config
 from EvaluationModel import EvaluationModel
 from TrainningModel import TrainningModel
 from task_adjustment import g_adjustment
+from EvaluationModel import EvaluationState
 
 class ActionRecongnition:
     def __init__(self, queue, recong_queue):
@@ -44,7 +45,7 @@ class ActionRecongnition:
             self.m_evaluation = EvaluationModel()
             self.m_evaluation_result = None
             self.m_train = TrainningModel()
-            self.m_evaluation_state = g_config.STATE_NEED
+            self.m_evaluation_state = g_config.TEACH_NEED
             self.m_train_state = g_config.TRAIN_DOING
 
         except Exception as e :
@@ -122,14 +123,12 @@ class ActionRecongnition:
             if (state == g_config.EVALUATION_FINISH):
                 return
 
-            if 'success' != self.m_evaluation.perform(user_landmarks, user_image):
-                print('evaluate action failed')
-
-            g_config.setEvaluationState(g_config.STATE_FINISH)
+            state = self.m_evaluation.perform(user_landmarks, user_image)
+            print('evaluate state:{}'.format(state))
         except Exception as e :
             print ('evaluate error:{}'.format(e))
 
-        return
+        return state
 
     def train(self, user_landmarks, user_image):
         try:
@@ -310,11 +309,15 @@ class ActionRecongnition:
                         #self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
                         self.m_image = image#cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-                        if None != landmarks :
+
+                        try :
                             landmark = landmarks['landmark']
-                            #self.evaluate(landmark, self.m_image)
-                            self.train(landmark, self.m_image)
+                            state = self.evaluate(landmark, self.m_image)
+                            if EvaluationState.COMPLETE == state :
+                                self.train(landmark, self.m_image)
                             #self.freeStyleRecong(landmark, self.m_image)
+                        except Exception as e :
+                            print(e)
 
                         #self.m_image = cv2.resize(self.m_image, (1440, 1080))
                         fps = self.getFPS()

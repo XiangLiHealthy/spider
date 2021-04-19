@@ -44,7 +44,7 @@
         "right_shoulder",
         "left_shoulder"
       ],
-      "last_date": "2021-04-17",
+      "last_date": "2021-04-19",
       "play_times": 2,
       "results": [
         {
@@ -78,6 +78,278 @@
             }
           ],
           "date_time": "2021-04-17"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 115,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 116,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 70,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 69,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 62,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 58,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 118,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 97,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 113,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 95,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 109,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 100,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 89,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 70,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
+        },
+        {
+          "adjust_flag": "adjusted",
+          "angle_range": [
+            {
+              "end_angle": 0,
+              "name": "right_shoulder",
+              "start_angle": 14
+            },
+            {
+              "end_angle": 0,
+              "name": "left_shoulder",
+              "start_angle": 10
+            }
+          ],
+          "date_time": "2021-04-19"
         }
       ],
       "target_ability": 0.5,
@@ -96,12 +368,12 @@
       "action_name": "ce_ping_ju.mp4",
       "angles_range": [
         {
-          "end_angle": 115,
+          "end_angle": 0,
           "name": "right_shoulder",
           "start_angle": 14
         },
         {
-          "end_angle": 116,
+          "end_angle": 0,
           "name": "left_shoulder",
           "start_angle": 10
         }
@@ -118,12 +390,12 @@
       "action_name": "ti_ce.mp4",
       "angles_range": [
         {
-          "end_angle": 115,
+          "end_angle": 0,
           "name": "right_shoulder",
           "start_angle": 14
         },
         {
-          "end_angle": 116,
+          "end_angle": 0,
           "name": "left_shoulder",
           "start_angle": 10
         }

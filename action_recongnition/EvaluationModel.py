@@ -12,6 +12,7 @@ import cv2
 from VideoManager import VideoManager
 from action import Action
 from datetime import date
+import time
 
 EVALUATION_WIN_NAME = 'evaluation'
 
@@ -77,18 +78,25 @@ class EvaluationModel :
                 return self.state_
 
             # set current task
+            last_time = time.perf_counter()
             if self.initTask() == EvaluationState.COMPLETE :
                 return self.state_
+            print ('init task time:{}'.format(time.perf_counter() - last_time))
 
             # 2.perform by task state
+            last_time = time.perf_counter()
             self.state_ = self.callbacks_[self.state_].perform(user_landmarks, user_image)
+            print ('state:{}, callback time:{}'.format(self.state_, time.perf_counter() - last_time))
 
+            last_time = time.perf_counter()
             # 4.create evaluation report
             if EvaluationState.COMPLETE == self.state_ :
                 self.release()
                 cv2.destroyWindow(EVALUATION_WIN_NAME)
             else:
                 cv2.imshow(EVALUATION_WIN_NAME, self.evaluation_image_)
+            print ('show evaluation image time :{}'.format(time.perf_counter() - last_time))
+
         except Exception as e :
             print ('perform evaluate failed'.format(e))
 

@@ -191,27 +191,36 @@ class TrainningModel :
 
         return
 
+    def is_angle_in_range(self, range, teacher_angles):
+        for angle_range in range:
+            angle_idx = g_config.get_idx_by_part(angle_range['name'])
+            angle = teacher_angles[angle_idx]
+            if angle_range['start_angle'] < angle_range['end_angle']:
+                if angle > angle_range['end_angle']:
+                    return False
+            else:
+                if angle <= angle_range['end_angle']:
+                    return False
+
+        return True
+
     def get_next_idx(self):
         next_idx = 0
         try:
         # get all anggle range for current task
         # test next pose weather ok, or next
+            end = False
             for next_idx in range(self.pose_idx_ + 1, len(self.m_current_action.m_teacher_pose)) :
-                for angle_range in self.m_current_action.angles_range :
-                    pose_angles = self.m_current_action.m_pose_angles[next_idx]
-                    angle_idx = Util.get_idx_by_part(angle_range['part'])
-                    angle = pose_angles[angle_idx]
-                    if angle_range['start_angle']  < angle_range['end_angle'] :
-                        if angle <= angle_range['end_angle']  :
-                            break
-                    else :
-                        if angle > angle_range['end_angle'] :
-                            break
+                flag = self.is_angle_in_range(self.m_current_action.angles_range,
+                             self.m_current_action.m_pose_angles[next_idx]['angles'])
+                if flag == True :
+                    break
 
-            if next_idx == len(self.m_current_action.m_teacher_pose):
+            if next_idx + 1 == len(self.m_current_action.m_teacher_pose):
                 self.count += 1
                 self.counter_.addAction(self.m_current_action.m_name)
                 self.pose_idx_ = 0
+                next_idx = 0
         except Exception as e :
             print ('train get_next_idx except:{}'.format(e))
 

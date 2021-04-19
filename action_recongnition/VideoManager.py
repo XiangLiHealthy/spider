@@ -5,6 +5,8 @@ class VideoManager :
         self.file_name_ = ''
         self.cap_ = None
         self.cache_ = []
+        self.last_idx = -1
+        self.image_ = None
 
         return
 
@@ -14,6 +16,8 @@ class VideoManager :
 
         # laoding video
         self.cap_ = cv2.VideoCapture(file_name)
+        self.last_idx = -1
+        self.image_ = None
 
         return
 
@@ -33,8 +37,14 @@ class VideoManager :
         #     item['idx'] = idx
         #     item['image'] = frame
         #     self.cache_.append(item)
+        if idx == self.last_idx :
+            return self.image_
+
         self.cap_.set(cv2.CAP_PROP_POS_FRAMES, idx)
         success, frame = self.cap_.read()
+        self.last_idx = idx
+        self.image_ = frame
+
         return frame
 
     def getFrameCount(self):

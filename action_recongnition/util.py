@@ -11,6 +11,7 @@ from numpy import unicode
 
 ANGLE_ERROR_THRESHOLD = 0
 THRESHOLD = 300
+TIP_CONFIDENCE = 0.7
 
 angle_points_config = [
     [28, 26, 24],#right knee
@@ -340,6 +341,41 @@ class Util:
             print ('pointErrorAngle error:{}'.format(e))
 
         return
+
+    def pointUserPositions(self, user_landmarks, user_image):
+        point_ = {}
+        point_['x'] = 40
+        point_['y'] = 40
+        LINE_HEIGHT = 20
+        error = False
+
+        #self.pointUserPosition(user_landmarks[27], user_landmarks[28], user_image, "please back off")
+        if user_landmarks[27]['visibility'] < TIP_CONFIDENCE and user_landmarks[28]['visibility'] < TIP_CONFIDENCE :
+            text = 'please back off'
+            cv2.putText(user_image, text, (point_['x'], point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            point_['y'] += LINE_HEIGHT
+            error = True
+
+        #self.pointUserPosition(user_landmarks[16], user_landmarks[28], user_image, "please to the right")
+        if (user_landmarks[16]['visibility'] < TIP_CONFIDENCE and user_landmarks[15]['visibility'] > TIP_CONFIDENCE ) \
+                or (user_landmarks[28]['visibility'] < TIP_CONFIDENCE and user_landmarks[27]['visibility'] > TIP_CONFIDENCE):
+            text = 'please to the right'
+            cv2.putText(user_image, text, (point_['x'], point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            point_['y'] += LINE_HEIGHT
+            error = True
+
+        #self.pointUserPosition(user_landmarks[27], user_landmarks[15], user_image, "plese to the left")
+        if (user_landmarks[15]['visibility'] < TIP_CONFIDENCE and user_landmarks[16]['visibility'] > TIP_CONFIDENCE ) or \
+                (user_landmarks[27]['visibility'] < TIP_CONFIDENCE and user_landmarks[28]['visibility'] > TIP_CONFIDENCE):
+            text = 'please to the left'
+            cv2.putText(user_image, text, (point_['x'], point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
+            point_['y'] += LINE_HEIGHT
+            error = True
+
+        return error
 
     #def getAction(self, actions, name):
 Util = Util()

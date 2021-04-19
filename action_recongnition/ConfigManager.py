@@ -187,7 +187,7 @@ class ConfigManager :
 
             task = g_config.get_task_by_name(action.m_name)
             if None != task :
-                action.angles_range = task['angle_range']
+                action.angles_range = task['angles_range']
         except Exception as e :
             print ('createAction error :{}'.format(e))
 

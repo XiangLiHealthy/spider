@@ -124,21 +124,33 @@ class Prepare:
 
     def perform(self, user_landmarks, user_image):
         try:
+            state = EvaluationState.PREPARE
+            t1 = time.perf_counter()
             # 1.set teacher pose
             self.setTeacherPose()
+            t2 = time.perf_counter()
+            print ('setTeacherPose time:{}'.format(t2 - t1))
 
             # 2. show teacher tips
+
             self.drawTeacherTips()
+            t1 = time.perf_counter()
+            print ('draw teacher tip time:{}'.format(t1 - t2))
 
             # 3. recong user pose
+            t2 = time.perf_counter()
             error_angles = Util.calculateAngleDiff(user_landmarks, user_image,
               self.context_.current_task_.teacher_landmarks, self.context_.evaluation_image_)
+            print ('calculate angle diff time:{}'.format(t2 - t1))
+
+            if Util.pointUserPositions(user_landmarks, user_image) :
+                return state
 
             # 4. error tips
             Util.pointErrorAngle(error_angles, user_landmarks, user_image)
 
             # 5. change state
-            state = EvaluationState.PREPARE
+
             if 0 == len(error_angles):
                 self.times_ += 1
                 if self.times_ > 30:
@@ -177,13 +189,19 @@ class Evaluating(Prepare):
     def perform(self, user_landmarks, user_image):
         try:
             # 1.init pose idx
+            last_time = time.perf_counter()
             self.initPoseIdx()
+            print ('init pose time:{}'.format(time.perf_counter() - last_time))
 
             # 2.set teacher pose
+            last_time = time.perf_counter()
             super().setTeacherPose()
+            print ('setTeacherPose time:{}'.format(time.perf_counter() - last_time))
 
             # 3. show teaacher tips
+            last_time = time.perf_counter()
             super().drawTeacherTips()
+            print ('drawTeacherTips time:{}'.format(time.perf_counter() - last_time))
 
             # 4. change state
         except Exception as e :
@@ -198,7 +216,7 @@ class Keeping:
         self.last_landmarks = []
 
         self.KEEP_START = 1
-        self.KEEP_OVER = 5
+        self.KEEP_OVER = 10
         self.landmarks_cache_ = []
         self.context_ = context
 
@@ -224,10 +242,17 @@ class Keeping:
 
     def perform(self, user_landmarks, user_image):
         try:
+            if self.keep_time_start_ == 0 :
+                self.keep_time_start_ = time.perf_counter()
+
             state = EvaluationState.KEEP_POSE
             last_sec_landmarks = self.get_last_sec_landmarks(user_landmarks)
             if None == last_sec_landmarks :
                 return state
+
+            # if Util.pointUserPositions(user_landmarks, user_image) :
+            #     self.keep_time_start_ = time.perf_counter()
+            #     return state
 
             error_angles = Util.calculateAngleDiff(user_landmarks, user_image, last_sec_landmarks, user_image)
 
@@ -382,7 +407,7 @@ class CreateReport:
                 j_config = result.j_config_
                 focus_parts = j_config['focus_part']
                 angle_0 = self.context_.current_task_.teacher_angle_0
-                angle_end = Util.translateLandmarks(self.context_.current_task_.teacher_landmarks, None, None)
+                angle_end = self.context_.current_task_.evaluation_angles
 
                 angles_range = []
                 for part in focus_parts :

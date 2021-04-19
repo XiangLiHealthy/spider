@@ -276,13 +276,16 @@ class ActionRecongnition:
             while True:
                 try:
                     url = "rtsp://admin:admin@192.168.17.62:8554/live"
-                    url = "rtsp://admin:admin@192.168.18.143:8554/live"
+                    #url = "rtsp://admin:admin@192.168.18.143:8554/live"
                     #url = "./sample/action.mp4"
 
                     # For webcam input:
                     cap = cv2.VideoCapture(url)
                     while cap.isOpened():
+                        last_time = time.perf_counter()
                         success, image = cap.read()
+                        print ('get video time:{}'.format(last_time - time.perf_counter()))
+
                         if not success:
                             print("Ignoring empty camera frame.")
                             # If loading a video, use 'break' instead of 'continue'.
@@ -301,7 +304,9 @@ class ActionRecongnition:
                         # height, weight, depth = image.shape
                         # image = cv2.resize(image, (640, 480))
 
+                        last_time = time.perf_counter()
                         results = pose.process(image)
+                        print ('recong frame time:{}'.format(time.perf_counter() - last_time))
 
                         image.flags.writeable = True
                         landmarks = None
@@ -314,9 +319,17 @@ class ActionRecongnition:
 
                         try :
                             landmark = landmarks['landmark']
+                            last_time = time.perf_counter()
                             state = self.evaluate(landmark, self.m_image)
+                            print ('evaluation time :{}'.format(time.perf_counter() - last_time))
+
                             if EvaluationState.COMPLETE == state :
+                                last_time = time.perf_counter()
                                 self.train(landmark, self.m_image)
+                                print ('train time:{}'.format(time.perf_counter() - last_time))
+
+                            #self.train(landmark, self.m_image)
+
                             #self.freeStyleRecong(landmark, self.m_image)
                         except Exception as e :
                             print(e)

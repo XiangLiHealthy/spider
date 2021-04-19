@@ -270,11 +270,13 @@ class ActionRecongnition:
         return
 
     def singleThread(self):
+        self.evaluate(None, None)
+
         with self.mp_pose.Pose(min_detection_confidence=0.5,min_tracking_confidence=0.5) as pose:
             while True:
                 try:
                     url = "rtsp://admin:admin@192.168.17.62:8554/live"
-                    #url = "rtsp://admin:admin@192.168.18.143:8554/live"
+                    url = "rtsp://admin:admin@192.168.18.143:8554/live"
                     #url = "./sample/action.mp4"
 
                     # For webcam input:

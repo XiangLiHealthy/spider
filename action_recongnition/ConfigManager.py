@@ -6,6 +6,7 @@ from action import Action
 from util import Util
 from evaluation_state import EvaluationState
 from util import angles_idx
+import datetime
 
 class EvaluationTask:
     def __init__(self):
@@ -90,7 +91,7 @@ class ConfigManager :
 
                 cur_date = date.today()
                 period = cur_date - date.fromisoformat(last_date)
-                if period.days > cycle :
+                if period.days >= cycle :
                     return self.EVALUATION_NEED
         except Exception as e :
             print ('getEvaluationState error:{}'.format(e))
@@ -102,12 +103,12 @@ class ConfigManager :
             return
 
         try:
-            actions = self.record_config_['evaluation']['actions']
+            actions = self.task_config_['evaluation']
             for action in actions:
-                if name == action['name'] :
-                    action['last_date'] = date.isoformat()
-                    with open(self.record_file_, "w") as outfile:
-                        json.dump(self.record_config_, outfile, sort_keys=True, indent=2)
+                if name == action['action_name'] :
+                    action['last_date'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                    with open(self.task_file_, "w") as outfile:
+                        json.dump(self.task_config_, outfile, sort_keys=True, indent=2)
                     break
         except Exception as e :
             print ('setEvaluationState error:{}'.format(e))
@@ -203,7 +204,7 @@ class ConfigManager :
 
                 current_date = date.fromisoformat(last_date)
                 period = date.today() - current_date
-                if period.days > cycle :
+                if period.days >= cycle :
                     tmp = EvaluationTask()
                     tmp.j_config_ = task
                     undone_tasks.append(tmp)
@@ -256,13 +257,12 @@ class ConfigManager :
 
         return self.task_config_
 
-    def save_evaluation_results(self, results):
+    def save_evaluation_results(self, new_result):
         try:
             evaluations = self.task_config_['evaluation']
             for evaluation in evaluations :
-                for result in results :
-                    if evaluation['action_name'] == result['action_name'] :
-                        evaluation['results'] = result['results']
+                if evaluation['action_name'] == new_result['action_name'] :
+                    evaluation['results'] = new_result['results']
         except Exception as e :
             print ('save_evaluation_results except:{}'.format(e))
 

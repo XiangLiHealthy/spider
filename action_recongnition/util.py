@@ -26,7 +26,7 @@ angle_points_config = [
 angles_idx = {
     "right_knee" : 0,
     "right_hip" : 1,
-    "right_should" : 2,
+    "right_shoulder" : 2,
     "right_bow" : 3,
     "left_knee" : 4,
     "left_hip" : 5,

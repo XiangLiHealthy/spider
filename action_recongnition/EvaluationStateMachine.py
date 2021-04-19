@@ -55,25 +55,33 @@ class Teaching:
         return
 
     def perform(self, user_landmarks, user_image):
-        try:
-            # 1.play video
-            self.setImage()
+        while True:
+            try:
+                # 1.play video
+                self.setImage()
 
-            # 2.tips text
-            self.showTips(user_image)
+                # 2.tips text
+                self.showTips(user_image)
 
-            # increament times if play ok
-            frame_count = self.context_.video_manager_.getFrameCount()
-            if frame_count == self.video_idx_:
-                self.play_times_ += 1
-                self.video_idx_ = 0
+                # increament times if play ok
+                frame_count = self.context_.video_manager_.getFrameCount()
+                if frame_count == self.video_idx_:
+                    self.play_times_ += 1
+                    self.video_idx_ = 0
 
-            # return next state if times ok
-            state = EvaluationState.TEACHING
-            if self.context_.current_task_.j_config_['play_times'] <= self.play_times_:
-                state = EvaluationState.PREPARE
-        except Exception as e :
-            print ('teaching perform except : {}'.format(e))
+                # return next state if times ok
+                state = EvaluationState.TEACHING
+                if self.context_.current_task_.j_config_['play_times'] <= self.play_times_:
+                    state = EvaluationState.PREPARE
+                    cv2.destroyWindow('teach')
+                    break
+
+
+                cv2.imshow('teach', self.context_.evaluation_image_)
+                if cv2.waitKey(5) & 0xFF == 27:
+                    break
+            except Exception as e:
+                print('teaching perform except : {}'.format(e))
 
         return state
 
@@ -83,6 +91,7 @@ class Prepare:
         self.teacher_image_ = None
         self.context_ = context  # context
         self.pose_idx_ = 0
+        self.times_ = 0
 
         return
 
@@ -131,7 +140,12 @@ class Prepare:
             # 5. change state
             state = EvaluationState.PREPARE
             if 0 == len(error_angles):
-                state = EvaluationState.EVALUATING
+                self.times_ += 1
+                if self.times_ > 30:
+                    state = EvaluationState.EVALUATING
+            else:
+                self.times_ = 0
+
         except Exception as e :
             print('prepar except:{}'.format(e))
 
@@ -224,14 +238,14 @@ class Keeping:
             diff = time.perf_counter() - self.keep_time_start_
             if diff < self.KEEP_OVER:
                 recipcal = 'kepp {} sec'.format(int(self.KEEP_OVER - diff))
-                cv2.putText(self.context_.evaluation_image_, recipcal, (40, 40), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                cv2.putText(user_image, recipcal, (40, 80), cv2.FONT_HERSHEY_PLAIN, 2.0,
                             (0, 0, 255), 2)
                 return state
 
             self.context_.current_task_.evaluation_landmark_ = user_landmarks
             self.context_.current_task_.image_ = user_image
-            self.context_.current_task_.evaluation_angles = Util.translateLandmarks(user_landmarks, user_image.shape,
-                          user_image)
+            self.context_.current_task_.evaluation_angles = Util.translateLandmarks(user_landmarks,
+                 user_image.shape, user_image)
         except Exception as e :
             print ('keeping perform except :{}'.format(e))
 
@@ -265,14 +279,14 @@ class NextAction:
             for idx in range(0, len(user_angles)):
                 user_ability = user_angles[idx] - teacher_angels_0[idx]
                 teacher_ability = teacher_angels_end[idx] - teacher_angels_0[idx]
-                score = user_ability / teacher_ability * 100
+                score = (user_ability + 181)/ (teacher_ability + 181) * 100
                 scores.append(score)
 
             self.context_.current_task_.scores_ = scores
 
             total_score = 0.0
             for score in scores:
-                total_score += scores
+                total_score += score
 
             self.context_.current_task_.sychronize_score_ = total_score / len(user_angles)
         except Exception as e :
@@ -380,13 +394,13 @@ class CreateReport:
                     angles_range.append(range)
 
                 result_item = {}
-                result_item['angle_range'].append(angles_range)
-                result_item['date_time'] = date.fromisoformat()
+                result_item['angle_range'] = angles_range
+                result_item['date_time'] = datetime.datetime.now().strftime('%Y-%m-%d')
                 result_item['adjust_flag'] = 'not_adjust'
                 j_config['results'].append(result_item)
 
-            # change evaluation into config
-            g_config.save_evaluation_results(tasks_results)
+                # change evaluation into config
+                g_config.save_evaluation_results(j_config)
         except Exception as e :
             print ('save_evaluation_results except :{}'.format(e))
 

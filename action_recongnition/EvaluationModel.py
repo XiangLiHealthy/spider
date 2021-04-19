@@ -13,6 +13,7 @@ from VideoManager import VideoManager
 from action import Action
 from datetime import date
 
+EVALUATION_WIN_NAME = 'evaluation'
 
 class EvaluationModel :
     def __init__(self):
@@ -73,11 +74,11 @@ class EvaluationModel :
     def perform(self, user_landmarks, user_image):
         try:
             if EvaluationState.COMPLETE == self.state_ :
-                return
+                return self.state_
 
             # set current task
             if self.initTask() == EvaluationState.COMPLETE :
-                return
+                return self.state_
 
             # 2.perform by task state
             self.state_ = self.callbacks_[self.state_].perform(user_landmarks, user_image)
@@ -85,8 +86,9 @@ class EvaluationModel :
             # 4.create evaluation report
             if EvaluationState.COMPLETE == self.state_ :
                 self.release()
-
-            cv2.imshow('evaluation', self.evaluation_image_)
+                cv2.destroyWindow(EVALUATION_WIN_NAME)
+            else:
+                cv2.imshow(EVALUATION_WIN_NAME, self.evaluation_image_)
         except Exception as e :
             print ('perform evaluate failed'.format(e))
 

@@ -38,7 +38,8 @@ class ConfigManager :
             self.TRAIN_DOING = 'doing'
             self.TEACH_NEED = 'nedd'
             self.TEACH_FINISH = "finish"
-
+            self.SHOW_SPLIT = 'split'
+            self.SHOW_COVER = 'cover'
             self.model_file_ = './action_model.json'
             self.record_file_  = './action_record.json'
             self.task_file_ = './action_task.json'
@@ -145,7 +146,7 @@ class ConfigManager :
         except Exception as e :
             print ('getTeachState error:{}'.format(e))
 
-        return
+        return self.TEACH_NEED
 
     def setTeachState(self):
 
@@ -280,5 +281,8 @@ class ConfigManager :
 
         return None
 
+    def get_show_mode(self):
+
+        return self.task_config_['user_config']['show_mode']
 g_config = ConfigManager()
 

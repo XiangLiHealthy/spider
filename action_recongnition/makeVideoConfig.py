@@ -47,7 +47,7 @@ class VideoConfigMaker :
   def filterLandmarks(self, landmarks):
       try:
         for point in key_points :
-          if landmarks[point]['visibility'] < 0.9 :
+          if landmarks[point]['visibility'] < 0.5 :
             return None
 
         return landmarks
@@ -178,7 +178,8 @@ class VideoConfigMaker :
       for file in action_videos :
         j_landmarks = self.get_landmarks(file)
         j_action = self.get_complete_info(j_landmarks, file)
-        acitons.append(j_action)
+        if len(j_landmarks) > 0 :
+          acitons.append(j_action)
 
       self.save(acitons)
     except Exception as e:

@@ -59,10 +59,6 @@ class EvaluationModel :
 
         return self.state_
 
-    def createEvaluationReport(self):
-
-        return
-
     def release(self):
         self.video_manager_.release()
         self.teacher_action_ = None
@@ -92,9 +88,9 @@ class EvaluationModel :
             # 4.create evaluation report
             if EvaluationState.COMPLETE == self.state_ :
                 self.release()
-                cv2.destroyWindow(EVALUATION_WIN_NAME)
-            else:
-                cv2.imshow(EVALUATION_WIN_NAME, self.evaluation_image_)
+                #cv2.destroyWindow(EVALUATION_WIN_NAME)
+            # else:
+            #     cv2.imshow(EVALUATION_WIN_NAME, self.evaluation_image_)
             print ('show evaluation image time :{}'.format(time.perf_counter() - last_time))
 
         except Exception as e :

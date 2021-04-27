@@ -12,6 +12,7 @@ class Action:
         self.m_en_name = ''
         self.video_path = ''
         self.angles_range = {}
+        self.count = 0
 
     def match(self, angles):
 

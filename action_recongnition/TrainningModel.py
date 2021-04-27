@@ -14,6 +14,7 @@ ANGLE_ERROR_THRESHOLD = 10
 KEEP_FINISHED = 'finish'
 KEEP_DOING = 'doing'
 TIP_CONFIDENCE = 0.7
+MIN_CHANGE_ANGLE = 3
 
 class TrainningModel :
     def __init__(self):
@@ -23,7 +24,6 @@ class TrainningModel :
             self.m_action_idx = 0
             self.pose_idx_ = 0
             self.m_train_task = []
-            self.count = 0
             self.video_manager_ = VideoManager()
             self.teacher_frame_ = None
             self.last_frame_idx = -1
@@ -34,7 +34,6 @@ class TrainningModel :
             self.point_['x'] = 40
             self.point_['y'] = 40
             self.LINE_HEIGHT = 25
-            self.counter_ = ActionCounter()
             self.tts_ = TTS()
             self.kept_time_ = 0
 
@@ -43,15 +42,31 @@ class TrainningModel :
             print ('TrainningModel __init__ error:{}'.format(e))
         return
 
+    def show_result(self):
+        self.point_['x'] = 40
+        self.point_['y'] = 40
+        text = ''
+        cv2.putText(self.teacher_frame_, 'train tasks has finished', (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                    (0, 0, 255), 2)
+        self.point_['y'] += self.LINE_HEIGHT
+
+        for action in self.m_teacher_actions:
+            text = '{}, count:{}, socre:80'.format(action.m_name, action.count)
+            cv2.putText(self.teacher_frame_, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                    (0, 0, 255), 2)
+            self.point_['y'] += self.LINE_HEIGHT
+
+        return
+
     def setCurrentAction(self):
         try:
             if self.m_action_idx >= len(self.m_teacher_actions) :
+                self.show_result()
                 return g_config.TRAIN_OK
 
             task = self.m_train_task[self.m_action_idx]
-            if self.count >= task['count'] :
+            if self.m_current_action.count >= task['count'] :
                 self.m_action_idx += 1
-                self.count = 0
 
             self.m_current_action = self.m_teacher_actions[self.m_action_idx]
         except Exception as e :
@@ -83,9 +98,9 @@ class TrainningModel :
             print('7.score')
             self.score()
 
-            print('8.show teacher image')
-            image = cv2.resize(self.teacher_frame_, (1280, 1440))
-            cv2.imshow('teacher', image)
+            # print('8.show teacher image')
+            # image = cv2.resize(self.teacher_frame_, (1280, 1440))
+            # cv2.imshow('teacher', image)
             #self.tts_.run()
         except Exception as e :
             print ('trainActions error:{}'.format(e))
@@ -130,7 +145,7 @@ class TrainningModel :
             frame_idx = self.m_current_action.m_teacher_pose[self.pose_idx_]['frame_num']
             if self.last_frame_idx != frame_idx :
                 image = self.video_manager_.getFrameByIdx(frame_idx)
-                self.teacher_frame_ = cv2.flip(image, 1)
+                self.teacher_frame_ = image #cv2.flip(image, 1)
                 self.last_frame_idx = frame_idx
 
             print ('get video idx:{}'.format(frame_idx))
@@ -199,26 +214,37 @@ class TrainningModel :
                 if angle > angle_range['end_angle']:
                     return False
             else:
-                if angle <= angle_range['end_angle']:
+                if angle <= angle_range['start_angle']:
                     return False
 
         return True
+
+    def is_enogh_change(self, ranges, next_idx):
+        last_angles = self.m_current_action.m_pose_angles[self.pose_idx_]['angles']
+        next_angles = self.m_current_action.m_pose_angles[next_idx]['angles']
+        for range in ranges :
+            angle_idx = g_config.get_idx_by_part(range['name'])
+            if math.fabs(last_angles[angle_idx] - next_angles[angle_idx]) > MIN_CHANGE_ANGLE :
+                return True
+
+        return False
 
     def get_next_idx(self):
         next_idx = 0
         try:
         # get all anggle range for current task
         # test next pose weather ok, or next
-            end = False
             for next_idx in range(self.pose_idx_ + 1, len(self.m_current_action.m_teacher_pose)) :
+                if not self.is_enogh_change(self.m_current_action.angles_range, next_idx) :
+                    continue
+
                 flag = self.is_angle_in_range(self.m_current_action.angles_range,
                              self.m_current_action.m_pose_angles[next_idx]['angles'])
                 if flag == True :
                     break
 
             if next_idx + 1 == len(self.m_current_action.m_teacher_pose):
-                self.count += 1
-                self.counter_.addAction(self.m_current_action.m_name)
+                self.m_current_action.count += 1
                 self.pose_idx_ = 0
                 next_idx = 0
         except Exception as e :
@@ -254,7 +280,7 @@ class TrainningModel :
 
             self.pose_idx_ = next_idx
 
-            text = '{},count:{}'.format(self.m_current_action.m_en_name, self.count)
+            text = '{},count:{}'.format(self.m_current_action.m_en_name, self.m_current_action.count)
             cv2.putText(user_image, text, (self.point_['x'], self.point_['y']), cv2.FONT_HERSHEY_PLAIN, 2.0,
                         (0, 0, 255), 2)
             self.point_['y'] += 20

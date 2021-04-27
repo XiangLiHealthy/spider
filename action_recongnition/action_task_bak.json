@@ -1,0 +1,176 @@
+{
+  "adjust_task_rule": {
+    "actions": [
+      {
+        "action_name": "ce_tai_shou.mp4",
+        "angle_change_unit": 10,
+        "count": 5,
+        "focus_parts": [
+          "right_shoulder"
+        ],
+        "frequency": 1,
+        "keep_day": 7,
+        "next_actions": [
+          "ti_ce",
+          "shen_zhan"
+        ]
+      },
+      {
+        "action_name": "qian_hou_bai_shou.mp4",
+        "angle_change_unit": 5,
+        "count": 5,
+        "focus_parts": [
+          "right_shoulder"
+        ],
+        "frequency": 1,
+        "interval": 7,
+        "keep_day": 4,
+        "next_actions": [
+          "pa_qiang"
+        ]
+      },
+      {
+        "action_name": "tai_shou.mp4",
+        "angle_change_unit": 5,
+        "count": 5,
+        "focus_parts": [
+          "right_shoulder"
+        ],
+        "frequency": 1,
+        "interval": 7,
+        "keep_day": 4,
+        "next_actions": [
+          "pa_qiang"
+        ]
+      }
+    ],
+    "mode": "auto"
+  },
+  "evaluation": [
+    {
+      "action_name": "ce_tai_shou.mp4",
+      "adjust_actions": [
+        "ce_tai_shou.mp4",
+        "qian_hou_bai_shou.mp4",
+        "tai_shou.mp4"
+      ],
+      "cycle": 0,
+      "focus_part": [
+        "right_shoulder",
+        "left_shoulder"
+      ],
+      "last_date": "2021-04-27",
+      "play_times": 2,
+      "results": [
+      ],
+      "target_ability": 0.5,
+      "tips": [
+        "1.please view teacher video",
+        "2.prepare evaluating like teacher pose",
+        "3.attemp to do better as same as teacher",
+        "4.keep 5sec",
+        "5.over"
+      ],
+      "video_path": "./video/ce_tai_shou.mp4"
+    },
+    {
+      "action_name": "qian_hou_bai_shou2.mp4",
+      "adjust_actions": [
+        "ce_ping_ju.mp4",
+        "ti_ce.mp4"
+      ],
+      "cycle": 0,
+      "focus_part": [
+        "right_shoulder",
+        "left_shoulder"
+      ],
+      "last_date": "2021-04-27",
+      "play_times": 2,
+      "results": [
+      ],
+      "target_ability": 0.5,
+      "tips": [
+        "1.please view teacher video",
+        "2.prepare evaluating like teacher pose",
+        "3.attemp to do better as same as teacher",
+        "4.keep 5sec",
+        "5.over"
+      ],
+      "video_path": "./video/qian_hou_bai_shou2.mp4"
+    },
+    {
+      "action_name": "tai_shou.mp4",
+      "adjust_actions": [
+        "ce_ping_ju.mp4",
+        "ti_ce.mp4"
+      ],
+      "cycle": 0,
+      "focus_part": [
+        "right_shoulder",
+        "left_shoulder"
+      ],
+      "last_date": "2021-04-27",
+      "play_times": 2,
+      "results": [
+      ],
+      "target_ability": 0.5,
+      "tips": [
+        "1.please view teacher video",
+        "2.prepare evaluating like teacher pose",
+        "3.attemp to do better as same as teacher",
+        "4.keep 5sec",
+        "5.over"
+      ],
+      "video_path": "./video/tai_shou.mp4"
+    }
+  ],
+  "train_task": [
+    {
+      "action_name": "ce_ping_ju.mp4",
+      "angles_range": [
+        {
+          "end_angle": 0,
+          "name": "right_shoulder",
+          "start_angle": 17
+        },
+        {
+          "end_angle": 34,
+          "name": "left_shoulder",
+          "start_angle": 14
+        }
+      ],
+      "count": 5,
+      "focus_parts": [
+        "right_shoulder"
+      ],
+      "frequency": 1,
+      "keep_day": 7,
+      "last_time": ""
+    },
+    {
+      "action_name": "ti_ce.mp4",
+      "angles_range": [
+        {
+          "end_angle": 0,
+          "name": "right_shoulder",
+          "start_angle": 17
+        },
+        {
+          "end_angle": 34,
+          "name": "left_shoulder",
+          "start_angle": 14
+        }
+      ],
+      "count": 5,
+      "focus_parts": [
+        "right_shoulder"
+      ],
+      "frequency": 1,
+      "keep_day": 4,
+      "last_time": ""
+    }
+  ],
+  "user_config": {
+    "show_mode": "split"
+  }
+}

@@ -9,8 +9,8 @@ import cv2
 import numpy as np
 from numpy import unicode
 
-ANGLE_ERROR_THRESHOLD = 0
-THRESHOLD = 300
+ANGLE_ERROR_THRESHOLD = 5
+THRESHOLD = 100
 TIP_CONFIDENCE = 0.7
 
 angle_points_config = [

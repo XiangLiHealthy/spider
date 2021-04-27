@@ -13,6 +13,7 @@ from EvaluationModel import EvaluationModel
 from TrainningModel import TrainningModel
 from task_adjustment import g_adjustment
 from EvaluationModel import EvaluationState
+import numpy as np
 
 class ActionRecongnition:
     def __init__(self, queue, recong_queue):
@@ -47,6 +48,7 @@ class ActionRecongnition:
             self.m_train = TrainningModel()
             self.m_evaluation_state = g_config.TEACH_NEED
             self.m_train_state = g_config.TRAIN_DOING
+            self.teacher_image_ = None;
 
         except Exception as e :
             print ('ActionRecongnition init :{}'.format(e))
@@ -128,6 +130,8 @@ class ActionRecongnition:
         except Exception as e :
             print ('evaluate error:{}'.format(e))
 
+        self.teacher_image_ = self.m_evaluation.evaluation_image_;
+
         return state
 
     def train(self, user_landmarks, user_image):
@@ -142,6 +146,8 @@ class ActionRecongnition:
             self.m_train_state = self.m_train.trainActions(user_landmarks, user_image)
         except Exception as e :
             print ('train error:{}'.format(e))
+
+        self.teacher_image_ = self.m_train.teacher_frame_
 
         return
 
@@ -269,6 +275,38 @@ class ActionRecongnition:
 
         return
 
+    def merge_video(self):
+        try:
+            teacher_image = self.teacher_image_
+            user_image = self.m_image
+            show_scale = 1.0 / 3.0
+
+            show_mode = g_config.get_show_mode()
+            if show_mode == g_config.SHOW_SPLIT :
+                teacher_image = cv2.resize(self.teacher_image_, (1280, 1440));
+                user_image = cv2.resize(self.m_image, (1280, 1440) )
+                self.m_image = np.hstack((teacher_image, user_image))
+                return
+
+            if show_mode == g_config.SHOW_COVER:
+                #self.teacher_image_ = cv2.resize(self.teacher_image_, (1280 * 2, 1440))
+                big_image = cv2.resize(self.m_image, (1280, 1440) )
+                small_image = self.teacher_image_
+
+                big_h, big_w, _ = big_image.shape
+                small_h = int(big_h * show_scale)
+                small_w = int(big_w * show_scale)
+                user_image = cv2.resize(small_image, (small_w, small_h))
+                big_image[0:small_h, 0:small_w] = user_image
+
+                self.m_image = big_image
+
+                return
+        except Exception as e :
+            print ('merger error:{}'.format(e))
+
+        return
+
     def singleThread(self):
         self.evaluate(None, None)
 
@@ -293,29 +331,31 @@ class ActionRecongnition:
                             cap = cv2.VideoCapture(url)
                             continue
 
-                        # Flip the image horizontally for a later selfie-view display, and convert
-                        # the BGR image to RGB.
-                        #image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
-                        # To improve performance, optionally mark the image as not writeable to
-                        # pass by reference.
-                        image = cv2.flip(image, 1)
-                        image.flags.writeable = False
+                        if EvaluationState.TEACHING != g_config.getEvaluationState() :
+                            # Flip the image horizontally for a later selfie-view display, and convert
+                            # the BGR image to RGB.
+                            #image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+                            # To improve performance, optionally mark the image as not writeable to
+                            # pass by reference.
+                            image = cv2.flip(image, 1)
+                            image.flags.writeable = False
 
-                        # height, weight, depth = image.shape
-                        # image = cv2.resize(image, (640, 480))
+                            # height, weight, depth = image.shape
+                            # image = cv2.resize(image, (640, 480))
 
-                        last_time = time.perf_counter()
-                        results = pose.process(image)
-                        print ('recong frame time:{}'.format(time.perf_counter() - last_time))
+                            last_time = time.perf_counter()
+                            results = pose.process(image)
+                            print ('recong frame time:{}'.format(time.perf_counter() - last_time))
 
-                        image.flags.writeable = True
-                        landmarks = None
-                        if None != results.pose_landmarks:
-                            landmarks = MessageToDict(results.pose_landmarks)
+                            image.flags.writeable = True
+                            landmarks = None
+                            if None != results.pose_landmarks:
+                                landmarks = MessageToDict(results.pose_landmarks)
 
                         #self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
                         self.m_image = image#cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
+                        #self.teacher_image_ = None
 
                         try :
                             landmark = landmarks['landmark']
@@ -323,16 +363,18 @@ class ActionRecongnition:
                             state = self.evaluate(landmark, self.m_image)
                             print ('evaluation time :{}'.format(time.perf_counter() - last_time))
 
+
+
                             if EvaluationState.COMPLETE == state :
                                 last_time = time.perf_counter()
                                 self.train(landmark, self.m_image)
                                 print ('train time:{}'.format(time.perf_counter() - last_time))
 
-                            #self.train(landmark, self.m_image)
-
                             #self.freeStyleRecong(landmark, self.m_image)
                         except Exception as e :
                             print(e)
+
+                        self.merge_video()
 
                         #self.m_image = cv2.resize(self.m_image, (1440, 1080))
                         fps = self.getFPS()
@@ -341,7 +383,7 @@ class ActionRecongnition:
                         height, width, _ = self.m_image.shape
                         self.m_image = cv2.putText(self.m_image, fps_str, (width - 200, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, (0, 0, 255), 2)
 
-                        self.m_image = cv2.resize(self.m_image, (1280, 1440))
+                        #self.m_image = cv2.resize(self.m_image, (1280, 1440))
                         cv2.imshow('MediaPipe Pose', self.m_image)
                         if cv2.waitKey(5) & 0xFF == 27:
                             break

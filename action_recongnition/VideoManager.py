@@ -42,6 +42,8 @@ class VideoManager :
 
         self.cap_.set(cv2.CAP_PROP_POS_FRAMES, idx)
         success, frame = self.cap_.read()
+        frame = cv2.flip(frame, 1)
+
         self.last_idx = idx
         self.image_ = frame
 

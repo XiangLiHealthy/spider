@@ -55,33 +55,32 @@ class Teaching:
         return
 
     def perform(self, user_landmarks, user_image):
-        while True:
-            try:
-                # 1.play video
-                self.setImage()
+        try:
+            # 1.play video
+            self.setImage()
 
-                # 2.tips text
-                self.showTips(user_image)
+            # 2.tips text
+            self.showTips(user_image)
 
-                # increament times if play ok
-                frame_count = self.context_.video_manager_.getFrameCount()
-                if frame_count == self.video_idx_:
-                    self.play_times_ += 1
-                    self.video_idx_ = 0
+            # increament times if play ok
+            frame_count = self.context_.video_manager_.getFrameCount()
+            if frame_count == self.video_idx_:
+                self.play_times_ += 1
+                self.video_idx_ = 0
 
-                # return next state if times ok
-                state = EvaluationState.TEACHING
-                if self.context_.current_task_.j_config_['play_times'] <= self.play_times_:
-                    state = EvaluationState.PREPARE
-                    cv2.destroyWindow('teach')
-                    break
+            # return next state if times ok
+            state = EvaluationState.TEACHING
+            if self.context_.current_task_.j_config_['play_times'] <= self.play_times_:
+                state = EvaluationState.PREPARE
+                self.video_idx_ = 0
+                self.play_times_ = 0
+                #cv2.destroyWindow('teach')
 
-
-                cv2.imshow('teach', self.context_.evaluation_image_)
-                if cv2.waitKey(5) & 0xFF == 27:
-                    break
-            except Exception as e:
-                print('teaching perform except : {}'.format(e))
+            # cv2.imshow('teach', self.context_.evaluation_image_)
+            # if cv2.waitKey(5) & 0xFF == 27:
+            #     break
+        except Exception as e:
+            print('teaching perform except : {}'.format(e))
 
         return state
 
@@ -143,8 +142,9 @@ class Prepare:
               self.context_.current_task_.teacher_landmarks, self.context_.evaluation_image_)
             print ('calculate angle diff time:{}'.format(t2 - t1))
 
-            if Util.pointUserPositions(user_landmarks, user_image) :
-                return state
+            if 0 == self.context_.task_idx_ :
+                if Util.pointUserPositions(user_landmarks, user_image)  :
+                    return state
 
             # 4. error tips
             Util.pointErrorAngle(error_angles, user_landmarks, user_image)
@@ -155,10 +155,12 @@ class Prepare:
                 self.times_ += 1
                 if self.times_ > 30:
                     state = EvaluationState.EVALUATING
+                    self.times_ = 0
             else:
                 self.times_ = 0
 
         except Exception as e :
+            state = EvaluationState.EVALUATING
             print('prepar except:{}'.format(e))
 
         return state
@@ -169,17 +171,59 @@ class Evaluating(Prepare):
         super().__init__(context)
 
         return
+    def get_max_angle(self, part):
+        max_angle = 0
+        try:
+            teacher_angles = self.context_.teacher_action_.m_pose_angles
+            part_idx = g_config.get_idx_by_part(part)
+
+            for test_idx in range(0, len(teacher_angles)) :
+                pose = teacher_angles[test_idx]
+                tmp = pose['angles'][part_idx]
+                if tmp > max_angle :
+                    max_angle = tmp
+        except Exception as e :
+            print ('get_max_angle error :{}'.format(e))
+
+        return max_angle
+
+    def get_idx_by_angle(self, part, angle):
+        idx = 0;
+        try:
+            part_idx = g_config.get_idx_by_part(part)
+            teacher_angles = self.context_.teacher_action_.m_pose_angles
+
+            for test_idx in range(0, len(teacher_angles)) :
+                pose = teacher_angles[test_idx]
+                idx = test_idx
+                if pose['angles'][part_idx] >= angle :
+                    break
+
+        except Exception as e :
+            print ('get angle idx by angle error:{}'.format(e))
+
+        return idx
 
     def initPoseIdx(self):
         try:
             # 1.get evaluation position
             position = self.context_.current_task_.j_config_['target_ability']
+            if position > 1 :
+                position = 1
+            if position < 0 :
+                position = 0
+
+            focus_parts = self.context_.current_task_.j_config_["focus_part"]
+            max_angel = self.get_max_angle(focus_parts[0])
+
+            target_angle = max_angel * position
+            idx = self.get_idx_by_angle(focus_parts[0], target_angle)
 
             # 2. get teacher pose num
             pose_num = len(self.context_.teacher_action_.m_teacher_pose)
 
             # 3. calculate pose idx
-            self.pose_idx_ = int(pose_num * position)
+            self.pose_idx_ = idx
             self.context_.current_task_.teacher_pose_idx_ = self.pose_idx_
         except Exception as e :
             print ('evaluating initPoseIdx except : {}'.format(e))
@@ -216,7 +260,7 @@ class Keeping:
         self.last_landmarks = []
 
         self.KEEP_START = 1
-        self.KEEP_OVER = 10
+        self.KEEP_OVER = 5
         self.landmarks_cache_ = []
         self.context_ = context
 
@@ -274,6 +318,7 @@ class Keeping:
         except Exception as e :
             print ('keeping perform except :{}'.format(e))
 
+        self.keep_time_start_ = 0
         return EvaluationState.NEXT
 
 
@@ -332,12 +377,21 @@ class NextAction:
             g_config.setEvaluationState(self.context_.current_task_.j_config_['action_name'], EvaluationState.COMPLETE)
 
             # 5.create report
-            state = EvaluationState.INIT
-            if self.context_.task_idx_ + 1 < len(self.context_.tasks_):
-                self.context_.task_idx_ += 1
-                state = EvaluationState.INIT
-            else:
-                state = EvaluationState.CREATE_REPORT
+            state = EvaluationState.TEACHING
+            while True :
+                if self.context_.task_idx_ + 1 < len(self.context_.tasks_):
+                    self.context_.task_idx_ += 1
+                    self.context_.current_task_ = self.context_.tasks_[self.context_.task_idx_]
+                    self.context_.teacher_action_ = g_config.getTeacherActions(self.context_.current_task_.j_config_['action_name'])
+                    if None == self.context_.teacher_action_ :
+                        continue
+
+                    state = EvaluationState.TEACHING
+                    break
+                else:
+                    state = EvaluationState.CREATE_REPORT
+                    break
+
         except Exception as e :
             print ('NextAction perform except:{}'.format(e))
 

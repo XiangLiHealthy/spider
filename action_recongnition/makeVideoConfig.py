@@ -46,9 +46,9 @@ class VideoConfigMaker :
 
   def filterLandmarks(self, landmarks):
       try:
-        for point in key_points :
-          if landmarks[point]['visibility'] < 0.5 :
-            return None
+        # for point in key_points :
+        #   if landmarks[point]['visibility'] < 0.5 :
+        #     return None
 
         return landmarks
       except Exception as e :

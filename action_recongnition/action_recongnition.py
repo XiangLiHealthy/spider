@@ -331,13 +331,15 @@ class ActionRecongnition:
                             cap = cv2.VideoCapture(url)
                             continue
 
-                        if EvaluationState.TEACHING != g_config.getEvaluationState() :
+                        image = cv2.flip(image, 1)
+                        landmark = None
+                        if EvaluationState.TEACHING != self.m_evaluation.state_ :
                             # Flip the image horizontally for a later selfie-view display, and convert
                             # the BGR image to RGB.
                             #image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
                             # To improve performance, optionally mark the image as not writeable to
                             # pass by reference.
-                            image = cv2.flip(image, 1)
+
                             image.flags.writeable = False
 
                             # height, weight, depth = image.shape
@@ -348,9 +350,9 @@ class ActionRecongnition:
                             print ('recong frame time:{}'.format(time.perf_counter() - last_time))
 
                             image.flags.writeable = True
-                            landmarks = None
                             if None != results.pose_landmarks:
                                 landmarks = MessageToDict(results.pose_landmarks)
+                                landmark = landmarks['landmark']
 
                         #self.mp_drawing.draw_landmarks(image, results.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
                         self.m_image = image#cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -358,7 +360,6 @@ class ActionRecongnition:
                         #self.teacher_image_ = None
 
                         try :
-                            landmark = landmarks['landmark']
                             last_time = time.perf_counter()
                             state = self.evaluate(landmark, self.m_image)
                             print ('evaluation time :{}'.format(time.perf_counter() - last_time))

@@ -60,15 +60,20 @@ class TrainningModel :
 
     def setCurrentAction(self):
         try:
-            if self.m_action_idx >= len(self.m_teacher_actions) :
-                self.show_result()
-                return g_config.TRAIN_OK
+            while True:
+                if self.m_action_idx >= len(self.m_teacher_actions) :
+                    self.show_result()
+                    return g_config.TRAIN_OK
 
-            task = self.m_train_task[self.m_action_idx]
-            if self.m_current_action.count >= task['count'] :
-                self.m_action_idx += 1
+                task = self.m_train_task[self.m_action_idx]
 
-            self.m_current_action = self.m_teacher_actions[self.m_action_idx]
+                if self.m_current_action.count >= task['count'] :
+                    self.m_action_idx += 1
+                    self.m_current_action = self.m_teacher_actions[self.m_action_idx]
+                else :
+                    self.m_current_action = self.m_teacher_actions[self.m_action_idx]
+                    break
+
         except Exception as e :
             print('setCurrentAction error:{}'.format(e))
 
@@ -173,7 +178,7 @@ class TrainningModel :
 
             self.pointStaticsAngles(error_angles, user_image)
 
-            self.pointUserPositions(user_landmarks, user_image)
+            #self.pointUserPositions(user_landmarks, user_image)
 
         except Exception as e :
             print ('point error:{}'.format(e))

@@ -22,7 +22,7 @@ class EvaluationModel :
             self.tasks_ = []
             self.tast_idx_ = 0
             self.current_task_ = None
-            self.state_ = EvaluationState.INIT
+            self.state_ = EvaluationState.TEACHING
             self.callbacks_ = {
                 EvaluationState.TEACHING : Teaching(self),
                 EvaluationState.PREPARE : Prepare(self),

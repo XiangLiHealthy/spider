@@ -71,7 +71,8 @@ class ConfigManager :
         except Exception as e :
             print ('load action model error:{}'.format(e))
 
-        return
+        return None
+
     def load_task(self):
         with open(self.task_file_, 'r') as f:
             self.task_config_ = json.load(f)

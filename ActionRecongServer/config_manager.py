@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 from util import Util
+from uri_def import  MOVE_DIRECTION
 
 class Pose :
     def __init__(self):
@@ -26,10 +27,11 @@ class ActionModel :
         self.video_path = ''
         self.time = 0.0
         self.last_idx = 0
-        self.last_direction = None
+        self.last_direction = MOVE_DIRECTION.UP
         self.action_time = 0.0
         self.en_name = ''
         self.video_file = ''
+        self.rever_count = 0
 
         return
 

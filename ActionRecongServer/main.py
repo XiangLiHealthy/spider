@@ -41,9 +41,11 @@ async def test_post(request):
 async def set_action(request) :
     response = text('')
     try:
+        print('json:{}'.format(request.json))
         response = g_http_handlers[URI_SET_ACTION].perform(request)
     except Exception as e :
         response.body = e
+        print(e)
 
     return response
 
@@ -51,9 +53,11 @@ async def set_action(request) :
 async def upload_landmarks(request) :
     response = text('')
     try:
+        print('json:{}'.format(request.json))
         response = g_http_handlers[URI_UPLOAD_LANDMARKS].perform(request)
     except Exception as e:
         response.body = e
+        print(e)
 
     return response
 
@@ -61,9 +65,11 @@ async def upload_landmarks(request) :
 async def finish_train(request) :
     response = text('')
     try:
+        print('json:{}'.format(request.json))
         response = g_http_handlers[URI_FINISH].perform(request)
     except Exception as e:
         response.body = e
+        print(e)
 
     return response
 
@@ -83,6 +89,6 @@ context.load_cert_chain(
     "./server.crt", keyfile="./server.key"
 )
 
-context = None
-app.run(host='0.0.0.0', port=9999, workers=4)
+#context = None
+app.run(host='0.0.0.0', port=9999, workers=4, ssl = context)
 

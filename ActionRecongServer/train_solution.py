@@ -8,13 +8,6 @@ TRAINING_OK = 'finish'
 THRESHOLD = 300
 REVERT_THRESHOLD = 3
 
-class MOVE_DIRECTION(Enum):
-    UP = 0,
-    DOWN = 1,
-    REVERT = 2,
-    UNKNOWN = 3
-
-
 class MatchContext:
     def __init__(self):
         self.teacher_poses = None
@@ -31,7 +24,7 @@ class TrainSolution :
         teacher = context.teacher
 
         # if up and down is marked,direction is revert
-        current_pose = context.teacher.poses
+        current_pose = context.teacher.poses[current_idx]
         direction = MOVE_DIRECTION.UP
 
         try:
@@ -82,11 +75,14 @@ class TrainSolution :
                     elif MOVE_DIRECTION.DOWN == move_direction :
                         one_pose.down = 1
                         one_pose.down_diff = 1
-                    else :
+                    elif move_direction == MOVE_DIRECTION.REVERT:
                         context.teacher.rever_count += 1
                         one_pose.revert_diff =  diff
                         one_pose.revert_idx = idx
+
                     break
+
+                idx += 1
         except Exception as e :
             print ('match teacher except :{}'.format(e))
 
@@ -170,7 +166,7 @@ class TrainSolution :
 
     def perform(self, task, landmarks):
         j_response = {}
-        j_response['result'] = RESULT_FAILD
+        j_response['result'] = RESULTl_OK
         j_response['desc'] = ''
 
         try:
@@ -215,5 +211,6 @@ class TrainSolution :
             j_response['data'] = data
         except Exception as e :
             print ('train perform except :{}'.format(e))
+            j_response['result'] = RESULT_FAILD
 
         return j_response

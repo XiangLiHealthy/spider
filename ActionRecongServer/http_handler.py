@@ -36,7 +36,7 @@ class SetActionHandlerImp(HttpHandler) :
                 task.action_name = j_request['action_name']
                 task.user_id = j_request['user_id']
                 task.solution = j_request['solution']
-                task.count = j_request['task_count']
+                task.need_count = j_request['task_count']
                 # 4.set action name and load teacher model
                 task.config = g_config.get_action_by_name(task.action_name)
                 if None == task.config :
@@ -51,6 +51,7 @@ class SetActionHandlerImp(HttpHandler) :
                 break
         except Exception as e :
             print ('set action except:{}'.format(e))
+            j_response['desc'] = e
 
         return json((j_response))
 
@@ -58,7 +59,7 @@ class SetActionHandlerImp(HttpHandler) :
 class UploadLandmarksHandler(HttpHandler) :
     def __init__(self):
         self.command_handlers_ = {
-            COMMAND_TRAIN, TrainCommandImp()
+            COMMAND_TRAIN: TrainCommandImp()
         }
 
         return
@@ -90,6 +91,7 @@ class UploadLandmarksHandler(HttpHandler) :
                 break
         except Exception as e :
             print ('upload landmarks except :{}'.format(e))
+            j_response['desc'] = e
 
         return json(j_response)
 
@@ -112,5 +114,6 @@ class FinishHandlerImp(HttpHandler) :
             j_response['desc'] = 'ok'
         except Exception as e :
             print ('finish handler except:{}'.format(e))
+            j_response['desc'] = e
 
         return json(j_response)

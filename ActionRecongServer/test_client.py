@@ -17,18 +17,15 @@ mp_pose = mp.solutions.pose
 import os
 import glob
 
-# tmp = urllib3.disable_warnings(InsecureRequestWarning)
+tmp = urllib3.disable_warnings(InsecureRequestWarning)
 
-URL_HTTPS = 'http://127.0.0.1:9999'
-#ssl._create_default_https_context = ssl._create_stdlib_context
-#s = requests.Session()
+URL_HTTPS = 'https://127.0.0.1:9999'
+ssl._create_default_https_context = ssl._create_stdlib_context
+s = requests.Session()
 
 def test_post(url, data):
     try:
-        user_agent = "Mozilla/4.0 (compatible;MSIE 5.5; Windows NT)"
-        # 伪装成浏览器
-        headers = {"User-Agent": user_agent}
-        r = requests.post(url, data ={'data' : 132})
+        r = requests.post(url, json = data, verify = False)
         if r.status_code == 200 :
             r.encoding = chardet.detect(r.content)["encoding"]
             return r.text
@@ -55,10 +52,10 @@ def test_https_post(url, data):
 
 def set_action(action_name, user_id) :
     data = {
-        'user_id' :  user_id,
-        'action_name' : action_name,
-        'task_count' : 5,
-        'soluation' : 'train'
+        "user_id" :  user_id,
+        "action_name" : action_name,
+        "task_count" : 5,
+        "solution" : "train"
     }
 
     last = time.perf_counter()
@@ -138,22 +135,14 @@ def finish_action(user_id):
 
     return
 
-# if __name__ == '__main__':
-#     user_id = 123
-#     action_name = 'ce_ping_ju.mp4'
-#     file_path = '../action_recongnition/video/ce_ping_ju.mp4'
-#
-#     while True :
-#         set_action(action_name, user_id)
-#
-#         upload_landmarks(user_id, file_path)
-#
-#         finish_action(user_id)
+if __name__ == '__main__':
+    user_id = 123
+    action_name = 'ce_ping_ju.mp4'
+    file_path = '../action_recongnition/video/ce_ping_ju.mp4'
 
+    while True :
+        set_action(action_name, user_id)
 
+        upload_landmarks(user_id, file_path)
 
-myobj = {'somekey': 'somevalue'}
-
-x = requests.post(URL_HTTPS + "/test_post", data = myobj)
-
-print(x.text)
+        finish_action(user_id)

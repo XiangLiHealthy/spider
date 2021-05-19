@@ -50,99 +50,177 @@ def test_https_post(url, data):
 
     return
 
-def set_action(action_name, user_id) :
-    data = {
-        "user_id" :  user_id,
-        "action_name" : action_name,
-        "task_count" : 5,
-        "solution" : "train"
-    }
+class VideoManager :
+    def __init__(self):
+        self.path_ = ''
+        self.cap_ = None
 
-    last = time.perf_counter()
-    r = test_post(URL_HTTPS + URI_SET_ACTION, data)
-    print (r)
-    print('set_action use time:{}'.format(time.perf_counter() - last))
+    def get_image(self, path):
+        if path != self.path_:
+            self.cap_ = cv2.VideoCapture(path)
+            self.path_ = path
 
-    return
+        image = None
+        if self.cap_.isOpened():
+            success, image = self.cap_.read()
+            if not success:
+                print("Ignoring empty camera frame.")
+                self.cap_.release()
 
-def upload_landmarks(user_id, path) :
-    video_landmarks = []
-    try:
-        # For static images:
-        with mp_pose.Pose(
-                static_image_mode=False,
-                min_detection_confidence=0.1,
-                # min_tracking_confidence=0.5
-        ) as pose:
-            cap = cv2.VideoCapture(path)
-            image = None
-            results = None
+        image = cv2.flip(image, 1)
 
-            images = {}
-            while cap.isOpened():
-                frame_num = cap.get(1)
-                success, image = cap.read()
-                if not success:
-                    print("Ignoring empty camera frame.")
-                    cap.release()
-                    break
+        return image
 
-                # image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
-                # To improve performance, optionally mark the image as not writeable to
-                # pass by reference.
-                image = cv2.flip(image, 1)
-                image.flags.writeable = False
 
-                results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+class TestRecongV1_0_0:
+    def __init__(self):
+        self.user_video_ = VideoManager()
+        self.teacher_video_ = VideoManager()
 
-                if not results.pose_landmarks:
-                    continue
+    def set_action(self, action_name, user_id, count, solution):
+        data = {
+            "user_id": user_id,
+            "action_name": action_name,
+            "task_count": count,
+            "solution": solution
+        }
 
-                image.flags.writeable = True
-                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        last = time.perf_counter()
+        r = test_post(URL_HTTPS + URI_SET_ACTION, data)
+        print(r)
+        print('set_action use time:{}'.format(time.perf_counter() - last))
 
-                cv2.imshow('get_landmarks', image)
-                if cv2.waitKey(5) & 0xFF == 27:
-                    break
+        return
 
-                landmarks = MessageToDict(results.pose_landmarks)
-                data = {
-                    'user_id' : user_id,
-                    'landmarks' : landmarks['landmark']
-                }
+    def draw_result(self, str_response, image, fact_count, action_name):
+        try:
+            if str_response is None:
+                print('action recong response is None')
+                return None
 
-                last = time.perf_counter()
-                r = test_post(URL_HTTPS + URI_UPLOAD_LANDMARKS, data)
-                print(r)
-                print('upload landmarks use time:{}'.format(time.perf_counter() - last))
+            response = json.loads(str_response)
+            result = response['result']
+            desc = response['desc']
+            data = response['data']
+            count = data['count']
+            score = data['score']
+            tips = data['error_tip']
+            keep_time = data['time_keep']
+            state = data['state']
 
-    except Exception as e:
-        print('get landmarks error:{}'.format(e))
+            x = 40
+            y = 40
+            text = '{}, count:{}/{}, socre:{}'.format(action_name, count, fact_count, int(score))
+            cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_PLAIN, 2.0,
+                        (0, 0, 255), 2)
 
-    return None
+            return count
+        except Exception as e:
+            print('draw result except:{}'.format(e))
 
-    return
+        return None
 
-def finish_action(user_id):
-    data = {
-        'user_id' :  user_id
-    }
+    def upload_landmarks(self, user_id, path, play_times, action_name, need_count) :
+        video_landmarks = []
+        try:
+            # For static images:
+            with mp_pose.Pose(
+                    static_image_mode=False,
+                    min_detection_confidence=0.1,
+                    # min_tracking_confidence=0.5
+            ) as pose:
+                cap = cv2.VideoCapture(path)
+                count = 0
+                while cap.isOpened():
+                    success, image = cap.read()
+                    if not success:
+                        print("Ignoring empty camera frame.")
+                        cap.release()
+                        break
 
-    last = time.perf_counter()
-    r = test_post(URL_HTTPS + URI_FINISH, data)
-    print (r)
-    print('finish use time:{}'.format(time.perf_counter() - last))
+                    # image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+                    # To improve performance, optionally mark the image as not writeable to
+                    # pass by reference.
+                    image = cv2.flip(image, 1)
+                    image.flags.writeable = False
 
-    return
+                    results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+                    if not results.pose_landmarks:
+                        continue
+
+                    image.flags.writeable = True
+                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+
+                    landmarks = MessageToDict(results.pose_landmarks)
+                    data = {
+                        'user_id' : user_id,
+                        'landmarks' : landmarks['landmark']
+                    }
+
+                    last = time.perf_counter()
+                    r = test_post(URL_HTTPS + URI_UPLOAD_LANDMARKS, data)
+                    count = self.draw_result(r, image, play_times, action_name)
+                    print(r)
+                    print('upload landmarks use time:{}'.format(time.perf_counter() - last))
+                    if count is None or count >= need_count:
+                        break
+
+                    cv2.imshow('get_landmarks', image)
+                    if cv2.waitKey(5) & 0xFF == 27:
+                        break
+
+        except Exception as e:
+            print('get landmarks error:{}'.format(e))
+
+        return count
+
+    def finish_action(self, user_id):
+        data = {
+            'user_id' :  user_id
+        }
+
+        last = time.perf_counter()
+        r = test_post(URL_HTTPS + URI_FINISH, data)
+        print (r)
+        print('finish use time:{}'.format(time.perf_counter() - last))
+
+        return
+
+
+    def perform(self):
+        id = time.perf_counter()
+        tasks = [
+            {'user_id' : int(id), 'action_name' : 'ce_ping_ju.mp4',
+             'file_path' : '../action_recongnition/video/ce_ping_ju.mp4', 'train_count' : 10},
+            {'user_id': int(id), 'action_name': 'qian_hou_bai_shou2.mp4',
+             'file_path': '../action_recongnition/video/qian_hou_bai_shou2.mp4', 'train_count': 10},
+        ]
+        url = "rtsp://admin:admin@192.168.17.62:8554/live"
+
+        while True:
+            for task in tasks:
+                self.set_action(task['action_name'], task['user_id'], task['train_count'], 'train')
+
+                play_times = 0
+                count = 0
+                while count < task['train_count']:
+                    ret = self.upload_landmarks(task['user_id'], task['file_path'],
+                                                play_times, task['action_name'], task['train_count'])
+
+                    # ret = self.upload_landmarks(task['user_id'], url,
+                    #                             task['play_times'], task['action_name'], task['train_count'])
+
+                    if ret is None:
+                        break
+
+                    count = ret
+                    play_times += 1
+
+                self.finish_action(task['user_id'])
+
+        return None
 
 if __name__ == '__main__':
-    user_id = 123
-    action_name = 'ce_ping_ju.mp4'
-    file_path = '../action_recongnition/video/ce_ping_ju.mp4'
-
-    while True :
-        set_action(action_name, user_id)
-
-        upload_landmarks(user_id, file_path)
-
-        finish_action(user_id)
+    test_v_1_0_0 = TestRecongV1_0_0()
+    test_v_1_0_0.perform()

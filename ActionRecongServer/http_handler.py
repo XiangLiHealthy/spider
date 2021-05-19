@@ -36,9 +36,10 @@ class SetActionHandlerImp(HttpHandler) :
                 task.action_name = j_request['action_name']
                 task.user_id = j_request['user_id']
                 task.solution = j_request['solution']
-                task.need_count = j_request['task_count']
                 # 4.set action name and load teacher model
                 task.config = g_config.get_action_by_name(task.action_name)
+                task.config.need_count = j_request['task_count']
+
                 if None == task.config :
                     j_response['result'] = RESULT_FAILD
                     j_response['desc'] = 'get action:{} failed'.format(task.action_name)
@@ -83,11 +84,7 @@ class UploadLandmarksHandler(HttpHandler) :
                 # case training/evaluation/free
                 solution = task.solution
                 landmarks = j_request['landmarks']
-                data = self.command_handlers_[solution].perform(task, landmarks)
-                j_response['data'] = data
-                j_response['result'] = RESULTl_OK
-                j_response['desc'] = ''
-
+                j_response = self.command_handlers_[solution].perform(task, landmarks)
                 break
         except Exception as e :
             print ('upload landmarks except :{}'.format(e))

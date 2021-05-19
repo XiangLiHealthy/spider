@@ -6,7 +6,8 @@ from math import pow
 TRAINING_DOING = 'doing'
 TRAINING_OK = 'finish'
 THRESHOLD = 300
-REVERT_THRESHOLD = 3
+REVERT_THRESHOLD = 1
+MATCHED_RATE = 0.33
 
 class MatchContext:
     def __init__(self):
@@ -36,18 +37,18 @@ class TrainSolution :
                 # if idx is bigger than last idx ,direction is up
                 if teacher.last_idx < current_idx :
                     direction = MOVE_DIRECTION.UP
+                    teacher.last_direction = direction
                     break
 
                 # if idx is smaller than last idx, dirction is down
                 elif teacher.last_idx > current_idx :
                     direction = MOVE_DIRECTION.DOWN
+                    teacher.last_direction = direction
                     break
-
                 else :
                     direction = teacher.last_direction
                     break
 
-            teacher.last_direction = direction
             teacher.last_idx = current_idx
         except Exception as e :
             print ('get move direction except :{}'.format(e))
@@ -65,6 +66,7 @@ class TrainSolution :
                 teacher_angles = one_pose.angles
                 diff = Util.caculatePoseDifference(teacher_angles, user_angles)
                 if diff < THRESHOLD :
+                    context.matched_idx = idx
                     state = True
                     context.matched_idx = idx
 
@@ -76,9 +78,9 @@ class TrainSolution :
                         one_pose.down = 1
                         one_pose.down_diff = 1
                     elif move_direction == MOVE_DIRECTION.REVERT:
-                        context.teacher.rever_count += 1
+                        context.teacher.revert_count += 1
                         one_pose.revert_diff =  diff
-                        one_pose.revert_idx = idx
+                        one_pose.revert= 1
 
                     break
 
@@ -95,7 +97,18 @@ class TrainSolution :
     # case1:match rate is upper threshold and tread is download and download is over
     # case2: up and down rate is upon of 1/3 and move trend is shutdown
     def check_match_rate(self, context):
-        if context.teacher.rever_count > REVERT_THRESHOLD :
+        teacher = context.teacher
+
+        # get matched rate score
+        matched_count = 0
+        for one_pose in teacher.poses:
+            if 1 == one_pose.up or 1 == matched_count:
+                matched_count += 1
+
+        teacher_count = len(teacher.poses)
+        rate = matched_count / teacher_count
+
+        if context.teacher.revert_count >= REVERT_THRESHOLD and rate > MATCHED_RATE:
             return True
 
         return False
@@ -110,9 +123,7 @@ class TrainSolution :
             matched_count = 0
             sum_diff = 0
             for one_pose in teacher.poses :
-                if 1 == one_pose.up :
-                    matched_count += 1
-                if 1 == one_pose.down :
+                if 1 == one_pose.up or 1 == matched_count:
                     matched_count += 1
 
                 sum_diff += pow(one_pose.up_diff, 2)+ pow(one_pose.down_diff , 2)
@@ -143,6 +154,9 @@ class TrainSolution :
             teacher = context.teacher
             # clear last_idx and last direction
 
+            # clear revert count
+            context.teacher.revert_count = 0
+
             # clear matched mark and diff
             for one_pose in teacher.poses :
                 one_pose.up = 0
@@ -151,14 +165,14 @@ class TrainSolution :
                 one_pose.down_diff = 0
 
                 if teacher.last_direction == MOVE_DIRECTION.UP :
-                    one_pose.up = one_pose.revert_idx
+                    one_pose.up = one_pose.revert
                     one_pose.up_diff = one_pose.revert_diff
                 else :
-                    one_pose.down = one_pose.revert_idx
+                    one_pose.down = one_pose.revert
                     one_pose.down_diff = one_pose.revert_diff
 
-            # clear revert count
-            teacher.revert_count = 0
+                one_pose.revert = 0
+                one_pose.revert_diff = 0
         except Exception as e :
             print ('clear match state except :{}'.format(e))
 
@@ -170,18 +184,19 @@ class TrainSolution :
         j_response['desc'] = ''
 
         try:
+            context = MatchContext()
+            context.teacher = task.config
+
             data = {}
             data['state'] = TRAINING_DOING
-            data['score'] = 0
-            data['count'] = 0
+            data['score'] = context.teacher.score
+            data['count'] = context.teacher.count
             data['error_tip'] = ''
             data['time_keep'] = 5
 
-            context = MatchContext()
-
             # get pose angle
             while True :
-                context.teacher = task.config
+
                 context.user_pose = Util.translateLandmarks(landmarks)
 
                 # match teacher
@@ -197,13 +212,14 @@ class TrainSolution :
                     break
 
                 # score
-                data['score'] = self.score(context)
+                context.teacher.score = self.score(context)
+                data['score'] = context.teacher.score
                 self.clear_match_state(context)
 
-                task.count += 1
-                data['count'] = task.count
+                context.teacher.count += 1
+                data['count'] = context.teacher.count
 
-                if task.count >= task.need_count :
+                if context.teacher.count >= context.teacher.need_count :
                     data['state'] = TRAINING_OK
 
                 break

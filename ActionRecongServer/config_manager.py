@@ -16,6 +16,8 @@ class Pose :
         self.up_diff = 0.0
         self.down_diff = 0.0
         self.frame_num = 0
+        self.revert = 0
+        self.revert_diff = 0.0
 
         return
 
@@ -31,7 +33,10 @@ class ActionModel :
         self.action_time = 0.0
         self.en_name = ''
         self.video_file = ''
-        self.rever_count = 0
+        self.revert_count = 0
+        self.score = 0
+        self.need_count = 0
+        self.count = 0
 
         return
 
@@ -69,8 +74,9 @@ class ConfigManager:
                 action_obj.en_name = action_config['en_name']
                 action_obj.video_file = action_config['video_file']
 
-                pose_obj = Pose()
+
                 for pose_config in action_config['pose'] :
+                    pose_obj = Pose()
                     pose_obj.frame_num = pose_config['frame_num']
                     pose_obj.keep_time = pose_config['keep_time']
                     pose_obj.landmarks = pose_config['landmarks']

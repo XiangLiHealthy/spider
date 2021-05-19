@@ -25,7 +25,7 @@ s = requests.Session()
 
 def test_post(url, data):
     try:
-        r = requests.post(url, json = data, verify = False)
+        r = s.post(url, json = data, verify = False)
         if r.status_code == 200 :
             r.encoding = chardet.detect(r.content)["encoding"]
             return r.text
@@ -107,14 +107,19 @@ class TestRecongV1_0_0:
             tips = data['error_tip']
             keep_time = data['time_keep']
             state = data['state']
+            diff = data['diff']
+            idx = data['idx']
 
-            x = 40
+            x = 10
             y = 40
-            text = '{}, count:{}/{}, socre:{}'.format(action_name, count, fact_count, int(score))
+            text = 'count:{}/{}, socre:{}, diff:{},idx:{}'.format(count,
+                    fact_count, int(score), int(diff), idx)
+
             cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_PLAIN, 2.0,
                         (0, 0, 255), 2)
 
-            return count
+            image = cv2.resize(image, (1280, 1440))
+            return count, image
         except Exception as e:
             print('draw result except:{}'.format(e))
 
@@ -160,7 +165,7 @@ class TestRecongV1_0_0:
 
                     last = time.perf_counter()
                     r = test_post(URL_HTTPS + URI_UPLOAD_LANDMARKS, data)
-                    count = self.draw_result(r, image, play_times, action_name)
+                    count, image = self.draw_result(r, image, play_times, action_name)
                     print(r)
                     print('upload landmarks use time:{}'.format(time.perf_counter() - last))
                     if count is None or count >= need_count:
@@ -192,9 +197,9 @@ class TestRecongV1_0_0:
         id = time.perf_counter()
         tasks = [
             {'user_id' : int(id), 'action_name' : 'ce_ping_ju.mp4',
-             'file_path' : '../action_recongnition/video/ce_ping_ju.mp4', 'train_count' : 10},
-            {'user_id': int(id), 'action_name': 'qian_hou_bai_shou2.mp4',
-             'file_path': '../action_recongnition/video/qian_hou_bai_shou2.mp4', 'train_count': 10},
+             'file_path' : '../action_recongnition/video/ce_ping_ju.mp4', 'train_count' : 15},
+            # {'user_id': int(id), 'action_name': 'qian_hou_bai_shou2.mp4',
+            #  'file_path': '../action_recongnition/video/qian_hou_bai_shou2.mp4', 'train_count': 5},
         ]
         url = "rtsp://admin:admin@192.168.17.62:8554/live"
 
@@ -205,7 +210,7 @@ class TestRecongV1_0_0:
                 play_times = 0
                 count = 0
                 while count < task['train_count']:
-                    ret = self.upload_landmarks(task['user_id'], task['file_path'],
+                    ret = self.upload_landmarks(task['user_id'], url,
                                                 play_times, task['action_name'], task['train_count'])
 
                     # ret = self.upload_landmarks(task['user_id'], url,

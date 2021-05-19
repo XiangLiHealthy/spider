@@ -5,16 +5,16 @@ from math import pow
 
 TRAINING_DOING = 'doing'
 TRAINING_OK = 'finish'
-THRESHOLD = 300
+THRESHOLD = 1000
 REVERT_THRESHOLD = 1
-MATCHED_RATE = 0.33
+MATCHED_RATE = 0.2
 
 class MatchContext:
     def __init__(self):
         self.teacher_poses = None
         self.user_pose = None
         self.matched_idx = -1
-
+        self.min_diff = 0.0
 
 class TrainSolution :
     def __init__(self):
@@ -58,33 +58,40 @@ class TrainSolution :
     def match_teacher(self, context):
         state = False
         idx = 0
-
+        min_idx = 0
+        min_diff = 999999999
         try:
             teacher_poses = context.teacher.poses
             user_angles = context.user_pose
+            min_pose = None
             for one_pose in teacher_poses :
                 teacher_angles = one_pose.angles
                 diff = Util.caculatePoseDifference(teacher_angles, user_angles)
-                if diff < THRESHOLD :
-                    context.matched_idx = idx
-                    state = True
-                    context.matched_idx = idx
-
-                    move_direction = self.get_move_direction(context, idx)
-                    if MOVE_DIRECTION.UP == move_direction :
-                        one_pose.up = 1
-                        one_pose.up_diff = diff
-                    elif MOVE_DIRECTION.DOWN == move_direction :
-                        one_pose.down = 1
-                        one_pose.down_diff = 1
-                    elif move_direction == MOVE_DIRECTION.REVERT:
-                        context.teacher.revert_count += 1
-                        one_pose.revert_diff =  diff
-                        one_pose.revert= 1
-
-                    break
+                if diff < min_diff :
+                    min_diff = diff
+                    min_idx = idx
+                    min_pose = one_pose
 
                 idx += 1
+
+            context.min_diff = min_diff
+            if min_diff < THRESHOLD :
+                state = True
+                context.matched_idx = min_idx
+
+                move_direction = self.get_move_direction(context, min_idx)
+                if MOVE_DIRECTION.UP == move_direction :
+                    min_pose.up = 1
+                    min_pose.up_diff = min_diff
+                else :
+                    min_pose.down = 1
+                    min_pose.down_diff = min_diff
+
+                    context.teacher.revert_count += 1
+                    min_pose.revert_diff =  min_diff
+                    min_pose.revert= 1
+
+
         except Exception as e :
             print ('match teacher except :{}'.format(e))
 
@@ -107,6 +114,7 @@ class TrainSolution :
 
         teacher_count = len(teacher.poses)
         rate = matched_count / teacher_count
+        print ('match count:{}/{}'.format(matched_count, teacher_count))
 
         if context.teacher.revert_count >= REVERT_THRESHOLD and rate > MATCHED_RATE:
             return True
@@ -123,7 +131,7 @@ class TrainSolution :
             matched_count = 0
             sum_diff = 0
             for one_pose in teacher.poses :
-                if 1 == one_pose.up or 1 == matched_count:
+                if 1 == one_pose.up or 1 == one_pose.down:
                     matched_count += 1
 
                 sum_diff += pow(one_pose.up_diff, 2)+ pow(one_pose.down_diff , 2)
@@ -134,6 +142,8 @@ class TrainSolution :
             # get diff score
             average_diff = sum_diff / matched_count
             standard = pow(THRESHOLD, 2)
+            # if average_diff > standard :
+            #     average_diff = 0
 
             diff_score = int ( (standard - average_diff) / standard * 100 )
 
@@ -201,6 +211,9 @@ class TrainSolution :
 
                 # match teacher
                 state = self.match_teacher(context)
+                data['diff'] = context.min_diff
+                data['idx'] = context.matched_idx
+
                 if state is False:
                     data['error_tips'] = self.tips_error(context)
                     break

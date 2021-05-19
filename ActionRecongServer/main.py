@@ -53,7 +53,7 @@ async def set_action(request) :
 async def upload_landmarks(request) :
     response = text('')
     try:
-        print('json:{}'.format(request.json))
+        #print('json:{}'.format(request.json))
         response = g_http_handlers[URI_UPLOAD_LANDMARKS].perform(request)
     except Exception as e:
         response.body = e

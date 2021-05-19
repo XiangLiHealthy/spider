@@ -235,7 +235,8 @@ class Util:
 
                 cv2.line(image, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
         except Exception as e :
-            print ('debug_landmarks error:{}'.format(e))
+            #print ('debug_landmarks error:{}'.format(e))
+            test = 1
 
         return
 

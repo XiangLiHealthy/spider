@@ -19,6 +19,7 @@ class Pose :
         self.revert = 0
         self.revert_diff = 0.0
 
+
         return
 
 
@@ -37,13 +38,14 @@ class ActionModel :
         self.score = 0
         self.need_count = 0
         self.count = 0
+        self.focus_parts = []
 
         return
 
 
 class ConfigManager:
     def __init__(self):
-        self.teacher_model_config = '../action_recongnition/video/action_model.json'
+        self.teacher_model_config = '../action_recongnition/action_model.json'
         self.actions_ = []
 
         self.load_actions()
@@ -73,13 +75,14 @@ class ConfigManager:
                 action_obj.action_time = action_config['action_time']
                 action_obj.en_name = action_config['en_name']
                 action_obj.video_file = action_config['video_file']
-
+                action_obj.focus_parts = action_config['focus_parts']
 
                 for pose_config in action_config['pose'] :
                     pose_obj = Pose()
                     pose_obj.frame_num = pose_config['frame_num']
                     pose_obj.keep_time = pose_config['keep_time']
                     pose_obj.landmarks = pose_config['landmarks']
+
                     pose_obj.angles = Util.translateLandmarks(pose_obj.landmarks)
                     action_obj.poses.append(pose_obj)
 

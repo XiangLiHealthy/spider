@@ -8,6 +8,17 @@ from evaluation_state import EvaluationState
 from util import angles_idx
 import datetime
 
+angles_idx = {
+    "right_knee" : 0,
+    "right_hip" : 1,
+    "right_shoulder" : 2,
+    "right_bow" : 3,
+    "left_knee" : 4,
+    "left_hip" : 5,
+    "left_shoulder" : 6,
+    "left_elbow" : 7
+}
+
 class EvaluationTask:
     def __init__(self):
         self.state = EvaluationState.INIT

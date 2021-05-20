@@ -27,7 +27,7 @@ angles_idx = {
     "right_knee" : 0,
     "right_hip" : 1,
     "right_shoulder" : 2,
-    "right_bow" : 3,
+    "right_elbow" : 3,
     "left_knee" : 4,
     "left_hip" : 5,
     "left_shoulder" : 6,
@@ -80,6 +80,17 @@ class Util:
         self.m_model_path = 'action_model.json'
         return
 
+    def get_idx_by_part(self, name):
+        return angles_idx[name]
+
+    def caculate_diff_with_parts(self, teacher_angles, user_angles, part_idxs):
+        sum_diff = 0
+        for idx in part_idxs :
+            diff = teacher_angles[idx] - user_angles[idx]
+            square = pow(diff, 2)
+            sum_diff += square
+
+        return sum_diff / len(part_idxs)
 
     def caculatePoseDifference(self, current, standard):
         sum_diff = 0.0
@@ -167,10 +178,10 @@ class Util:
         try:
             # v1 is your firsr vector
             # v2 is your second vector
-            v1 = [start['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
-            v2 = [end['x'] - mid['x'], end['y'] - mid['y'], end['z'] - mid['z']]
-            #v1 = [start['x'] - mid['x'], start['y'] - mid['y']]
-            #v2 = [end['x'] - mid['x'], end['y'] - mid['y']]
+            # v1 = [start['x'] - mid['x'], start['y'] - mid['y'], start['z'] - mid['z']]
+            # v2 = [end['x'] - mid['x'], end['y'] - mid['y'], end['z'] - mid['z']]
+            v1 = [start['x'] - mid['x'], start['y'] - mid['y']]
+            v2 = [end['x'] - mid['x'], end['y'] - mid['y']]
             angle_d = int (self.cal_ang_vec(v1, v2))
 
         except Exception as e :
@@ -246,10 +257,11 @@ class Util:
         angles = self.caculateAngles(angle_points)
 
         #self.debug_anle(angle_points, angles, image)
-        self.debug_landmarks(pose_landmarks, shape, image)
+        #self.debug_landmarks(pose_landmarks, shape, image)
 
         idx = 2
         #self.debug_one_angle(angle_points[idx], int(angles[idx]), image)
+        self.debug_anle(angle_points, angles, image)
 
         return angles
 

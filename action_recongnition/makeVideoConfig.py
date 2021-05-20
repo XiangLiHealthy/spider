@@ -82,7 +82,7 @@ class VideoConfigMaker :
             #image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
             # To improve performance, optionally mark the image as not writeable to
             # pass by reference.
-            image = cv2.flip(image, 1)
+            #image = cv2.flip(image, 1)
             image.flags.writeable = False
 
             results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -146,6 +146,7 @@ class VideoConfigMaker :
       action['mode']    = 'full_body'
       action['pose']    = landmarks
       action['video_file'] = filename
+      action['focus_parts'] = ['left_shoulder']
 
     except Exception as e :
       print ('get completed info failed:{}'.format(e))

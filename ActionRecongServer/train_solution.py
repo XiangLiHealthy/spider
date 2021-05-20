@@ -5,9 +5,9 @@ from math import pow
 
 TRAINING_DOING = 'doing'
 TRAINING_OK = 'finish'
-THRESHOLD = 1000
+THRESHOLD = 100
 REVERT_THRESHOLD = 1
-MATCHED_RATE = 0.2
+MATCHED_RATE = 0.6
 
 class MatchContext:
     def __init__(self):
@@ -55,24 +55,50 @@ class TrainSolution :
 
         return direction
 
-    def match_teacher(self, context):
-        state = False
+    def get_pose_diff(self, context):
+        focus_parts = context.teacher.focus_parts
+        teacher_poses = context.teacher.poses
+        user_angles = context.user_pose
+
         idx = 0
         min_idx = 0
         min_diff = 999999999
-        try:
-            teacher_poses = context.teacher.poses
-            user_angles = context.user_pose
-            min_pose = None
-            for one_pose in teacher_poses :
-                teacher_angles = one_pose.angles
-                diff = Util.caculatePoseDifference(teacher_angles, user_angles)
-                if diff < min_diff :
-                    min_diff = diff
-                    min_idx = idx
-                    min_pose = one_pose
 
-                idx += 1
+        part_idxs = []
+        for part in focus_parts :
+            idx = Util.get_idx_by_part(part)
+            part_idxs.append(idx)
+
+        # case 1: there are focus parts
+        for one_pose in teacher_poses :
+            teacher_angles = one_pose.angles
+            if len(part_idxs) > 0 :
+                diff = Util.caculate_diff_with_parts(teacher_angles, user_angles, part_idxs)
+            else:
+                diff = Util.caculatePoseDifference(teacher_angles, user_angles)
+
+            if diff < min_diff :
+                min_diff = diff
+                min_idx = idx
+                min_pose = one_pose
+
+            if min_diff == 0 :
+                break
+
+            idx += 1
+
+        for idx in part_idxs :
+            print ('idx:{}, teacher:{}, user:{}'.format( idx, min_pose.angles[idx], user_angles[idx]))
+
+        print ('user:{}'.format(user_angles))
+
+        return min_idx, min_diff, min_pose
+
+    def match_teacher(self, context):
+        state = False
+
+        try:
+            min_idx, min_diff, min_pose = self.get_pose_diff(context)
 
             context.min_diff = min_diff
             if min_diff < THRESHOLD :

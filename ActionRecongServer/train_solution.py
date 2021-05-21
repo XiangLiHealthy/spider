@@ -64,10 +64,7 @@ class TrainSolution :
         min_idx = 0
         min_diff = 999999999
 
-        part_idxs = []
-        for part in focus_parts :
-            idx = Util.get_idx_by_part(part)
-            part_idxs.append(idx)
+        part_idxs = Util.get_part_idxs(focus_parts)
 
         # case 1: there are focus parts
         for one_pose in teacher_poses :

@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from util import Util
 from uri_def import  MOVE_DIRECTION
+from math import fabs
 
 class Pose :
     def __init__(self):
@@ -62,6 +63,48 @@ class ConfigManager:
 
         return None
 
+    def get_parts_idx(self, parts):
+
+        return
+
+    def filter_landmarks(self, action):
+        try:
+            last_angles = []
+            focus_parts = action['focus_parts']
+            poses = action['pose']
+            if len(poses) == 0 :
+                return
+
+            min_diff = 1
+            last_angles = None
+            parts_idx = Util.get_part_idxs(focus_parts)
+
+            new_poses = []
+            for pose in poses :
+                current_angles = Util.translateLandmarks(pose['landmarks'])
+                if last_angles is None :
+                    last_angles = current_angles
+                    continue
+
+                valid_pose = False
+                for idx in parts_idx :
+                    current = current_angles[idx]
+                    last = last_angles[idx]
+                    diff = current - last
+                    if diff > min_diff :
+                        valid_pose = True
+                        break
+
+                if valid_pose is True :
+                    last_angles = current_angles
+                    new_poses.append(pose)
+
+            action['pose'] = new_poses
+        except Exception as e:
+            print ('filter landmarks except:{}'.format(e))
+
+        return None
+
     def load_actions(self):
         try:
             config = self.load_json(self.teacher_model_config)
@@ -76,6 +119,8 @@ class ConfigManager:
                 action_obj.en_name = action_config['en_name']
                 action_obj.video_file = action_config['video_file']
                 action_obj.focus_parts = action_config['focus_parts']
+
+                self.filter_landmarks(action_config)
 
                 for pose_config in action_config['pose'] :
                     pose_obj = Pose()

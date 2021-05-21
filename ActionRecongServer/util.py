@@ -389,5 +389,13 @@ class Util:
 
         return error
 
+    def get_part_idxs(self, parts):
+        idxs = []
+        for part in parts :
+            idx = self.get_idx_by_part(part)
+            idxs.append(idx)
+
+        return idxs
+
     #def getAction(self, actions, name):
 Util = Util()

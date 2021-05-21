@@ -6,7 +6,7 @@ from http_handler import SetActionHandlerImp
 from http_handler import UploadLandmarksHandler
 from http_handler import FinishHandlerImp
 from uri_def import *
-
+from sanic.response import html
 
 g_http_handlers = {
     URI_SET_ACTION : SetActionHandlerImp() ,
@@ -28,6 +28,14 @@ async def hello_world(request):
         surpport_uri = e
 
     return text(surpport_uri)
+
+@app.get('/pose.html')
+async def pose_html(request) :
+    content = ''
+    with open('./resource/pose.html', 'r') as f:
+        content = f.read()
+
+    return html(content)
 
 @app.post("/test_post")
 async def test_post(request):
@@ -90,5 +98,5 @@ context.load_cert_chain(
 )
 
 #context = None
-app.run(host='0.0.0.0', port=9999, workers=1, ssl = context)
+app.run(host='0.0.0.0', port=LISTEN_PORT, workers=1, ssl = context)
 

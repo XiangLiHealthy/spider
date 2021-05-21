@@ -11,6 +11,7 @@ import mediapipe as mp
 from google.protobuf.json_format import MessageToDict
 import json
 from util import Util
+import numpy as np
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -20,7 +21,7 @@ import glob
 
 tmp = urllib3.disable_warnings(InsecureRequestWarning)
 
-URL_HTTPS = 'https://127.0.0.1:9999'
+URL_HTTPS = 'https://127.0.0.1:{}'.format(LISTEN_PORT)
 ssl._create_default_https_context = ssl._create_stdlib_context
 s = requests.Session()
 
@@ -67,8 +68,9 @@ class VideoManager :
             if not success:
                 print("Ignoring empty camera frame.")
                 self.cap_.release()
+                self.path_ = ''
 
-        image = cv2.flip(image, 1)
+        #image = cv2.flip(image, 1)
 
         return image
 
@@ -129,7 +131,7 @@ class TestRecongV1_0_0:
 
         return -1, image
 
-    def upload_landmarks(self, user_id, path, play_times, action_name, need_count) :
+    def upload_landmarks(self, user_id, path, play_times, action_name, need_count, teacher_path) :
         video_landmarks = []
         try:
             # For static images:
@@ -177,6 +179,11 @@ class TestRecongV1_0_0:
 
                     count, image = self.draw_result(r, image, play_times, action_name)
 
+                    teacher_image = self.teacher_video_.get_image(teacher_path)
+                    height, width, _ = image.shape
+                    teacher_image = cv2.resize(teacher_image, (width, height))
+                    image = np.hstack((teacher_image, image))
+
                     cv2.imshow('get_landmarks', image)
                     if cv2.waitKey(5) & 0xFF == 27:
                         break
@@ -207,21 +214,22 @@ class TestRecongV1_0_0:
     def perform(self):
         id = time.perf_counter()
         tasks = [
-            # {'user_id' : int(id), 'action_name' : 'ce_ping_ju.mp4',
-            #  'file_path' : '../action_recongnition/video/ce_ping_ju.mp4', 'train_count' : 15},
+            {'user_id' : int(id), 'action_name' : 'ce_ping_ju.mp4',
+             'file_path' : '../action_recongnition/video/ce_ping_ju.mp4', 'train_count' : 5},
             # {'user_id': int(id), 'action_name': 'qian_hou_bai_shou2.mp4',
             #  'file_path': '../action_recongnition/video/qian_hou_bai_shou2.mp4', 'train_count': 5},
             {'user_id': int(id), 'action_name': 'ce_tai_shou.mp4',
              'file_path': '../action_recongnition/video/ce_tai_shou.mp4', 'train_count': 5},
             # {'user_id': int(id), 'action_name': 'shenzhan.mp4',
             #  'file_path': '../action_recongnition/video/shenzhan.mp4', 'train_count': 5},
-            # {'user_id': int(id), 'action_name': 'tai_shou.mp4',
-            #  'file_path': '../action_recongnition/video/tai_shou.mp4', 'train_count': 5},
+            {'user_id': int(id), 'action_name': 'tai_shou.mp4',
+             'file_path': '../action_recongnition/video/tai_shou.mp4', 'train_count': 5},
             # {'user_id': int(id), 'action_name': 'ti_ce.mp4',
             #  'file_path': '../action_recongnition/video/ti_ce.mp4', 'train_count': 5},
         ]
         url = "rtsp://admin:admin@192.168.17.62:8554/live"
         url = "rtsp://admin:admin@192.168.1.195:8554/live"
+        url = 0
 
         while True:
             for task in tasks:
@@ -231,7 +239,7 @@ class TestRecongV1_0_0:
                 count = 0
                 while count < task['train_count']:
                     ret = self.upload_landmarks(task['user_id'], url,
-                                                play_times, task['action_name'], task['train_count'])
+                                                play_times, task['action_name'], task['train_count'], task['file_path'])
 
                     # ret = self.upload_landmarks(task['user_id'], task['file_path'],
                     #                             play_times, task['action_name'], task['train_count'])

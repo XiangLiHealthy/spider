@@ -10,6 +10,8 @@ COMMAND_EVALUATION = 'evaluation'
 RESULT_FAILD = 'failed'
 RESULTl_OK = 'ok'
 
+LISTEN_PORT = 8888
+
 class MOVE_DIRECTION(Enum):
     UP = 0,
     DOWN = 1,
